@@ -1,0 +1,25 @@
+{
+  "name": "ARCH-HUB",
+  "short_name": "ARCH-HUB",
+  "description": "AI-assisted archaeology data workflow app \u2014 offline, unified, and field-ready.",
+  "start_url": "arch-hub.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A3F31",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "arch-hub-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "arch-hub-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
