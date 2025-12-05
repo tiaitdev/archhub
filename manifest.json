@@ -2,7 +2,7 @@
   "name": "ARCH-HUB",
   "short_name": "ARCH-HUB",
   "description": "AI-assisted archaeology data workflow app \u2014 offline, unified, and field-ready.",
-  "start_url": "arch-hub.html",
+  "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
