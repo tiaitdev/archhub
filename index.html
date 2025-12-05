@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ARCH-HUB – All Modules (Artifacts, Context Sheets, GPR, Stratigraphy)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f2f6fb;
+      color: #123;
+    }
+
+    /* Splash screen */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0f3c91, #1458c7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #fff;
+      z-index: 9999;
+      transition: opacity 0.6s ease;
+    }
+
+    .splash-logo {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .splash-subtitle {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    .splash-spinner {
+      margin-top: 24px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .splash-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* App container */
+    .app-container {
+      min-height: 100vh;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      padding: 16px 16px 72px 16px; /* space for bottom nav */
+    }
+
+    .app-visible { opacity: 1; }
+
+    .app-shell {
+      max-width: 1100px;
+      margin: 0 auto 40px auto;
+    }
+
+    .app-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .app-title-main {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .app-title-sub {
+      font-size: 0.9rem;
+      color: #456;
+    }
+
+    .pill-tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      background: #e1e7f5;
+      color: #0f3c91;
+      margin-left: 6px;
+    }
+
+    /* Header controls */
+    .header-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .header-left {
+      flex: 1 1 220px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-right button {
+      font-size: 0.78rem;
+      padding-inline: 10px;
+    }
+
+    .search-input {
+      flex: 1 1 auto;
+      min-width: 160px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #cfd8e6;
+      font-size: 0.9rem;
+    }
+
+    button {
+      border-radius: 999px;
+      padding: 8px 16px;
+      border: none;
+      background: #0f3c91;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button.secondary {
+      background: #e1e7f5;
+      color: #0f3c91;
+    }
+
+    button.danger {
+      background: #e24949;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    /* Layout: list + detail */
+    .content-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .column {
+      flex: 1 1 260px;
+      min-width: 260px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: #667;
+    }
+
+    .record-card {
+      cursor: pointer;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #f8fafc;
+      border: 1px solid #dde3f2;
+      flex-shrink: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:0.7rem;
+      color:#999;
+      text-align:center;
+      padding:4px;
+    }
+
+    .record-meta {
+      flex: 1;
+    }
+
+    .record-meta p {
+      margin: 2px 0;
+    }
+
+    .info-text {
+      font-size: 0.85rem;
+      color: #456;
+      margin-top: 4px;
+    }
+
+    .small { font-size: 0.8rem; }
+
+    .muted { color: #667; }
+
+    .id-highlight {
+      font-family: monospace;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #f1f5ff;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e1e7f5;
+      color: #0f3c91;
+      font-size: 0.75rem;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #cfd8e6;
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .photo-preview {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #cfd8e6;
+      background: #f8fafc;
+    }
+
+    .qr-box {
+      margin-top: 8px;
+      display: inline-block;
+    }
+
+    .qr-placeholder {
+      width: 160px;
+      height: 160px;
+      border-radius: 16px;
+      border: 2px dashed #0f3c91;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      text-align: center;
+      background: #f8fbff;
+      padding: 8px;
+    }
+
+    .row-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .grow { flex: 1 1 auto; }
+
+    /* Bottom navigation */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #ffffff;
+      border-top: 1px solid #d1d8ea;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 6px 10px 6px;
+      z-index: 1000;
+    }
+
+    .bottom-nav button {
+      flex: 1;
+      max-width: 150px;
+      justify-content: center;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      background: #e6ecfb;
+      color: #123;
+    }
+
+    .bottom-nav button.active {
+      background: #0f3c91;
+      color: #fff;
+    }
+
+    @media (min-width: 900px) {
+      .bottom-nav {
+        max-width: 1100px;
+        margin: 0 auto;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 999px 999px 0 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-container { padding: 12px 12px 72px 12px; }
+    }
+  </style>
+<style>
+
+  /* === ARCH-HUB Earthy Theme Overrides (Option B + UI tweaks) === */
+  body {
+    background: #F3EEE5;
+    color: #2B231B;
+  }
+
+  .splash-screen {
+    background: linear-gradient(135deg, #4A3F31, #6B5C4A);
+  }
+
+  .splash-subtitle {
+    color: #F5EFE4;
+  }
+
+  .app-container {
+    background: transparent;
+    padding: 8px 8px 72px 8px;
+  }
+
+  .app-shell {
+    background: transparent;
+  }
+
+  .app-title-main {
+    color: #2B231B;
+    font-size: 1.25rem;
+  }
+
+  .pill-tag {
+    background: #D9C9A7;
+    color: #4A3F31;
+  }
+
+  .header-bar {
+    background: #F5EFE4;
+    box-shadow: 0 2px 6px rgba(74, 63, 49, 0.15);
+    padding: 6px 10px;
+  }
+
+  .search-input {
+    border-color: #D1C2A8;
+    background: #FDF8ED;
+    color: #2B231B;
+  }
+
+  .card {
+    background: #F5EFE4;
+    box-shadow: 0 2px 6px rgba(74, 63, 49, 0.12);
+  }
+
+  .card-subtitle {
+    color: #7B6B58;
+  }
+
+  .info-text {
+    color: #6B5C4A;
+  }
+
+  .small.muted, .muted.small, .muted {
+    color: #8A7A66;
+  }
+
+  button {
+    background: #4A3F31;
+    color: #FFFFFF;
+    border-radius: 5px;
+    transition: transform 0.08s ease-out, box-shadow 0.12s ease-out, background-color 0.12s ease-out;
+  }
+
+  button.secondary {
+    background: #E5D7BE;
+    color: #4A3F31;
+    border-radius: 5px;
+  }
+
+  button.danger {
+    background: #B7523A;
+    color: #FDF8ED;
+    border-radius: 5px;
+  }
+
+  button:disabled {
+    opacity: 0.55;
+  }
+
+  button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+
+  .thumb {
+    background: #F3EEE5;
+    border-color: #D1C2A8;
+  }
+
+  .photo-preview {
+    background: #F3EEE5;
+    border-color: #D1C2A8;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    border-color: #D1C2A8;
+    background: #FDF8ED;
+    color: #2B231B;
+  }
+
+  input[type="text"]::placeholder,
+  input[type="number"]::placeholder,
+  textarea::placeholder {
+    color: #A08F7B;
+  }
+
+  .id-highlight {
+    background: #E5D7BE;
+    color: #2B231B;
+  }
+
+  .pill {
+    background: #D9C9A7;
+    color: #4A3F31;
+  }
+
+  .qr-placeholder {
+    border-color: #4A3F31;
+    background: #F5EFE4;
+    color: #4A3F31;
+  }
+
+  .bottom-nav {
+    background: #F5EFE4;
+    border-top-color: #D1C2A8;
+    box-shadow: -2px -4px 8px rgba(0,0,0,0.12);
+  }
+
+  .bottom-nav button {
+    background: #E5D7BE;
+    color: #4A3F31;
+    border-radius: 0px;
+    border: 1px solid #D1C2A8;
+    transition: background-color 0.12s ease-out, color 0.12s ease-out, border-color 0.12s ease-out;
+  }
+
+  .bottom-nav button.active {
+    background: #4A3F31;
+    color: #FDF8ED;
+  }
+
+  .bottom-nav button:active {
+    background-color: #D4C29E;
+  }
+
+  /* Header layout overrides */
+  .app-title-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .app-title-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .app-title-main-center {
+    text-align: center;
+  }
+
+  .app-title-spacer {
+    width: 32px;
+    height: 1px;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 900px) {
+    .content-row {
+      flex-direction: column;
+    }
+    .column {
+      min-width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .app-container {
+      padding: 8px 8px 72px 8px;
+    }
+    .header-bar {
+      padding: 6px 8px;
+      gap: 6px;
+    }
+    .app-title-main {
+      font-size: 1.1rem;
+    }
+  }
+
+  /* Notification bar */
+  .notification {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 480px;
+    width: calc(100% - 32px);
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #F5EFE4;
+    color: #2B231B;
+    border: 1px solid #D1C2A8;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+  .notification-info {
+    border-color: #D1C2A8;
+  }
+  .notification-success {
+    border-color: #5A8A4A;
+    background: #EEF6EA;
+  }
+  .notification-error {
+    border-color: #B7523A;
+    background: #FCEDEA;
+  }
+  .notification-close {
+    background: transparent;
+    color: inherit;
+    border-radius: 50%;
+    border: none;
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+
+  /* Overlay viewer for GPR & Stratigraphy */
+  .overlay-viewer {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+  .overlay-base-img {
+    display: block;
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  .overlay-layer {
+    position: absolute;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .overlay-layer-gpr.anomaly {
+    border: 2px solid rgba(255, 193, 7, 0.9);
+    background-color: rgba(255, 193, 7, 0.25);
+  }
+  .overlay-layer-gpr.boundary {
+    border: 2px dashed rgba(33, 150, 243, 0.9);
+    background-color: rgba(33, 150, 243, 0.10);
+  }
+  .overlay-layer-strat.layer {
+    border-top: 2px solid rgba(111, 78, 55, 0.9);
+    background-color: rgba(111, 78, 55, 0.10);
+  }
+  .overlay-layer-strat.feature {
+    border: 2px solid rgba(183, 82, 58, 0.9);
+    background-color: rgba(183, 82, 58, 0.25);
+  }
+  .overlay-toolbar {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .overlay-toolbar label {
+    font-size: 0.8rem;
+  }
+</style>
+
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash" class="splash-screen">
+    <img src="arch-hub-logo.svg" alt="ARCH-HUB logo" style="height:300px; margin-bottom:16px;">
+    <div class="splash-logo">ARCH-HUB</div>
+    <div class="splash-subtitle">AI Archaeology Assistant</div>
+    <div class="splash-spinner"></div>
+  </div>
+
+  <div id="app-root" class="app-container">
+    <div class="app-shell">
+      <div id="notification" class="notification" style="display:none;">
+        <span id="notification-text"></span>
+        <button type="button" class="notification-close" onclick="hideNotification()">✕</button>
+      </div>
+      <!-- Title -->
+      <div class="app-title-row">
+        <div class="app-title-logo">
+          <img src="arch-hub-logo.svg" alt="ARCH-HUB logo" style="height:32px; flex-shrink:0;">
+        </div>
+        <div class="app-title-main app-title-main-center">
+          <span id="module-title">Artifacts</span>
+        </div>
+        <div class="app-title-spacer"></div>
+      </div>
+
+      <!-- Header controls: search + add new + export/import -->
+      <div class="header-bar">
+        <div class="header-left">
+          <input
+            id="search-input"
+            class="search-input"
+            type="text"
+            placeholder="Search..."
+            oninput="onSearchChange(this.value)"
+          />
+        </div>
+        <div class="header-right">
+          <button type="button" class="secondary" onclick="exportAllData()">
+            ⬇ Export JSON
+          </button>
+          <button type="button" class="secondary" onclick="document.getElementById('import-file-input').click()">
+            ⬆ Import JSON
+          </button>
+          <button type="button" id="add-button" onclick="onAddNewClicked()">
+            <span>➕</span><span id="add-button-label">Add New Artifact</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- hidden file input for import -->
+      <input
+        type="file"
+        id="import-file-input"
+        accept="application/json"
+        style="display:none"
+        onchange="handleImportFile(event)"
+      />
+
+      <!-- Main content: list + detail/new -->
+      <div class="content-row">
+        <!-- LIST COLUMN -->
+        <div class="column">
+          <div class="card" id="list-card">
+            <div class="card-header">
+              <div class="card-title" id="list-title">Stored Artifacts</div>
+              <div class="small muted" id="record-count-label">0 records</div>
+            </div>
+            <div id="record-list"></div>
+          </div>
+        </div>
+
+        <!-- DETAIL / FORM COLUMN -->
+        <div class="column">
+          <div class="card" id="detail-card">
+            <div class="card-header">
+              <div class="card-title" id="detail-title">New Artifact</div>
+              <div class="small muted" id="detail-subtitle">Use voice + AI to fill the context sheet.</div>
+            </div>
+
+            <!-- Forms for each module -->
+            <div id="form-artifact" class="module-form">
+              <p class="info-text">
+                Step 1 – Add photo, then describe the find in your own words.
+                ARCH-HUB uses that as <strong>user_input_context</strong> and captures
+                <strong>time, timezone, and GPS</strong> automatically when available.
+              </p>
+
+              <div class="info-text small"><strong>Photo</strong></div>
+              <div class="row-inline" style="margin-bottom: 6px;">
+                <label>
+                  <input id="input-photo-camera" type="file" accept="image/*" capture="environment" style="display:none" />
+                  <button type="button" class="secondary" onclick="document.getElementById('input-photo-camera').click()">
+                    📷 Use Camera
+                  </button>
+                </label>
+                <label>
+                  <input id="input-photo-album" type="file" accept="image/*" style="display:none" />
+                  <button type="button" class="secondary" onclick="document.getElementById('input-photo-album').click()">
+                    🖼️ From Album
+                  </button>
+                </label>
+              </div>
+              <img id="photo-preview" class="photo-preview" alt="Artifact preview will appear here" />
+
+              <div style="margin-top: 10px;">
+                <label for="spoken-notes">Spoken / typed observation</label>
+                <textarea id="spoken-notes" placeholder="Pottery fragment found in grid A4 at depth 20 cm near fire pit."></textarea>
+                <p class="info-text small">
+                  On iPhone/iPad, tap inside this box and use the keyboard <b>mic</b> to dictate.
+                </p>
+                <button type="button" onclick="extractFieldsFromObservationArtifact()">
+                  ✨ Use AI logic to suggest fields
+                </button>
+              </div>
+
+              <hr />
+              <p class="info-text">Step 2 – Review the AI-suggested structure and edit if needed.</p>
+
+              <div class="row-inline">
+                <div class="grow">
+                  <label for="field-artifact-type">Artifact type</label>
+                  <input id="field-artifact-type" type="text" placeholder="Pottery fragment, bone, tool, etc." />
+                </div>
+              </div>
+
+              <div class="row-inline" style="margin-top: 6px;">
+                <div style="flex: 0 0 90px;">
+                  <label for="field-grid">Grid</label>
+                  <input id="field-grid" type="text" placeholder="A4" />
+                </div>
+                <div style="flex: 0 0 110px;">
+                  <label for="field-depth">Depth (cm)</label>
+                  <input id="field-depth" type="number" min="0" step="1" placeholder="20" />
+                </div>
+                <div class="grow">
+                  <label for="field-site">Site name</label>
+                  <input id="field-site" type="text" placeholder="Site or trench name" />
+                </div>
+              </div>
+
+              <div style="margin-top: 6px;">
+                <label for="field-notes">Extra notes</label>
+                <textarea id="field-notes" placeholder="Layer three, near wall, close to hearth..."></textarea>
+              </div>
+
+              <div class="row-inline" style="margin-top: 6px;">
+                <button type="button" class="secondary" onclick="autoSuggestArtifactTags()">
+                  🏷️ Suggest tags
+                </button>
+                <div id="tag-suggestions" class="info-text small"></div>
+              </div>
+
+              <div class="row-inline" style="margin-top: 10px;">
+                <button type="button" onclick="saveArtifact()">
+                  💾 Save artifact record
+                </button>
+                <button type="button" class="secondary" onclick="resetArtifactForm()">
+                  ✖ Clear form
+                </button>
+              </div>
+            </div>
+
+            <div id="form-context" class="module-form" style="display:none;">
+              <p class="info-text">
+                Context Sheet – capture trench, layer, feature and summary.
+                Voice + AI can help fill the structure, auto-context logs time & GPS.
+              </p>
+
+              <div style="margin-top: 6px;">
+                <label for="ctx-site">Site name</label>
+                <input id="ctx-site" type="text" placeholder="Site name" />
+              </div>
+
+              <div class="row-inline" style="margin-top: 6px;">
+                <div style="flex: 0 0 110px;">
+                  <label for="ctx-trench">Trench</label>
+                  <input id="ctx-trench" type="text" placeholder="B" />
+                </div>
+                <div style="flex: 0 0 110px;">
+                  <label for="ctx-layer">Layer</label>
+                  <input id="ctx-layer" type="text" placeholder="3" />
+                </div>
+                <div class="grow">
+                  <label for="ctx-gridrange">Grid range</label>
+                  <input id="ctx-gridrange" type="text" placeholder="A4–A6" />
+                </div>
+              </div>
+
+              <div style="margin-top: 6px;">
+                <label for="ctx-feature">Feature type</label>
+                <input id="ctx-feature" type="text" placeholder="Wall, hearth, pit, post-hole..." />
+              </div>
+
+              <div style="margin-top: 10px;">
+                <label for="ctx-notes">Spoken / typed description</label>
+                <textarea id="ctx-notes" placeholder="Stone wall feature in layer 3, trench B, running north-south..."></textarea>
+                <button type="button" onclick="extractFieldsFromObservationContext()">
+                  ✨ Use AI logic to suggest fields
+                </button>
+              </div>
+
+              <div style="margin-top: 6px%;">
+                <label for="ctx-summary">Summary (ai_output_structured.summary)</label>
+                <textarea id="ctx-summary" placeholder="Short summary of this context"></textarea>
+              </div>
+
+              <div class="row-inline" style="margin-top: 10px;">
+                <button type="button" onclick="saveContextSheet()">
+                  💾 Save context sheet
+                </button>
+                <button type="button" class="secondary" onclick="resetContextForm()">
+                  ✖ Clear form
+                </button>
+              </div>
+            </div>
+
+            <div id="form-gpr" class="module-form" style="display:none;">
+              <p class="info-text">
+                GPR Record – store a GPR slice image, area name, depth range and anomaly description.
+                Auto-context captures when & where this interpretation was logged.
+              </p>
+
+              <div class="info-text small"><strong>GPR Image</strong></div>
+              <div class="row-inline" style="margin-bottom: 6px;">
+                <label>
+                  <input id="gpr-image-input" type="file" accept="image/*" style="display:none" />
+                  <button type="button" class="secondary" onclick="document.getElementById('gpr-image-input').click()">
+                    🖼️ Upload GPR image
+                  </button>
+                </label>
+              </div>
+              <img id="gpr-preview" class="photo-preview" alt="GPR preview will appear here" />
+
+              <div style="margin-top: 6px;">
+                <label for="gpr-area">Area / profile ID</label>
+                <input id="gpr-area" type="text" placeholder="Profile 12, courtyard, etc." />
+              </div>
+
+              <div class="row-inline" style="margin-top: 6px;">
+                <div style="flex: 0 0 120px;">
+                  <label for="gpr-depth">Depth range (cm)</label>
+                  <input id="gpr-depth" type="text" placeholder="40–80" />
+                </div>
+                <div class="grow">
+                  <label for="gpr-anomaly">Anomaly type</label>
+                  <input id="gpr-anomaly" type="text" placeholder="Void, wall, possible feature..." />
+                </div>
+              </div>
+
+              <div style="margin-top: 6px;">
+                <label for="gpr-notes">Interpretation notes</label>
+                <textarea id="gpr-notes" placeholder="Possible wall reflection running east-west..."></textarea>
+              </div>
+
+              <div style="margin-top: 6px;">
+                <label for="gpr-confidence">Confidence label</label>
+                <input id="gpr-confidence" type="text" placeholder="Low, Medium, High" />
+              </div>
+
+              <div class="row-inline" style="margin-top: 10px;">
+                <button type="button" onclick="saveGprRecord()">
+                  💾 Save GPR record
+                </button>
+                <button type="button" class="secondary" onclick="resetGprForm()">
+                  ✖ Clear form
+                </button>
+              </div>
+            </div>
+
+            <div id="form-strat" class="module-form" style="display:none;">
+              <p class="info-text">
+                Stratigraphy Profile – capture wall section, layer count and key layers.
+                Auto-context logs when & where this profile was recorded.
+              </p>
+
+              <div class="info-text small"><strong>Profile Photo (optional)</strong></div>
+              <div class="row-inline" style="margin-bottom: 6px;">
+                <label>
+                  <input id="strat-photo-input" type="file" accept="image/*" style="display:none" />
+                  <button type="button" class="secondary" onclick="document.getElementById('strat-photo-input').click()">
+                    🖼️ Upload stratigraphy photo
+                  </button>
+                </label>
+              </div>
+              <img id="strat-preview" class="photo-preview" alt="Stratigraphy preview will appear here" />
+
+              <div style="margin-top: 6px;">
+                <label for="strat-site">Site / trench</label>
+                <input id="strat-site" type="text" placeholder="Trench C, north wall" />
+              </div>
+
+              <div class="row-inline" style="margin-top: 6px;">
+                <div style="flex: 0 0 120px;">
+                  <label for="strat-layers">Layer count</label>
+                  <input id="strat-layers" type="number" min="1" placeholder="6" />
+                </div>
+                <div class="grow">
+                  <label for="strat-key">Key layers (short)</label>
+                  <input id="strat-key" type="text" placeholder="Layer 3 ash, layer 5 clay..." />
+                </div>
+              </div>
+
+              <div style="margin-top: 6px;">
+                <label for="strat-summary">Profile summary</label>
+                <textarea id="strat-summary" placeholder="Summarize the sequence from topsoil down..."></textarea>
+              </div>
+
+              <div class="row-inline" style="margin-top: 10px;">
+                <button type="button" onclick="saveStratProfile()">
+                  💾 Save stratigraphy profile
+                </button>
+                <button type="button" class="secondary" onclick="resetStratForm()">
+                  ✖ Clear form
+                </button>
+              </div>
+            </div>
+
+            <!-- DETAIL VIEW (shared, content generated per module) -->
+            <div id="detail-view" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom navigation -->
+  <div class="bottom-nav">
+    <button id="nav-artifact" class="active" onclick="switchModule('artifact')">🗂 Artifacts</button>
+    <button id="nav-context" onclick="switchModule('context')">📄 Context Sheets</button>
+    <button id="nav-gpr" onclick="switchModule('gpr')">📡 GPR</button>
+    <button id="nav-strat" onclick="switchModule('strat')">🧱 Stratigraphy</button>
+  </div>
+
+    <!-- Failsafe: always hide splash and show app even if main JS errors -->
+  <script>
+
+    var overlayStates = {
+      gpr: { mode: "overlay", opacity: 0.4 },
+      strat: { mode: "overlay", opacity: 0.4 }
+    };
+
+    function setOverlayMode(moduleKey, mode) {
+      if (!overlayStates[moduleKey]) return;
+      overlayStates[moduleKey].mode = mode;
+      var containerId = moduleKey === "gpr" ? "gpr-overlay-viewer" : "strat-overlay-viewer";
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      var layers = container.querySelectorAll(".overlay-layer");
+      for (var i = 0; i < layers.length; i++) {
+        layers[i].style.display = (mode === "overlay") ? "block" : "none";
+      }
+    }
+
+    function setOverlayOpacity(moduleKey, value) {
+      if (!overlayStates[moduleKey]) return;
+      var v = (typeof value === "string") ? parseInt(value, 10) : value;
+      if (isNaN(v)) v = 40;
+      overlayStates[moduleKey].opacity = v / 100.0;
+      var containerId = moduleKey === "gpr" ? "gpr-overlay-viewer" : "strat-overlay-viewer";
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      var layers = container.querySelectorAll(".overlay-layer");
+      for (var i = 0; i < layers.length; i++) {
+        layers[i].style.opacity = overlayStates[moduleKey].opacity;
+      }
+    }
+
+
+    function showNotification(message, type) {
+      var bar = document.getElementById("notification");
+      var text = document.getElementById("notification-text");
+      if (!bar || !text) return;
+      bar.classList.remove("notification-info","notification-success","notification-error");
+      if (type === "success") bar.classList.add("notification-success");
+      else if (type === "error") bar.classList.add("notification-error");
+      else bar.classList.add("notification-info");
+      text.textContent = message;
+      bar.style.display = "flex";
+      if (type !== "error") {
+        if (bar._timeoutId) clearTimeout(bar._timeoutId);
+        bar._timeoutId = setTimeout(function() {
+          bar.style.display = "none";
+        }, 4000);
+      }
+    }
+
+    function hideNotification() {
+      var bar = document.getElementById("notification");
+      if (bar) {
+        bar.style.display = "none";
+      }
+    }
+
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var s = document.getElementById('splash');
+        var a = document.getElementById('app-root');
+        if (s) s.classList.add('splash-hidden');
+        if (a) a.classList.add('app-visible');
+      }, 1200);
+    });
+  </script>
+
+<!-- QRCode library placeholder (replace with real qrcode.min.js for scannable codes) -->
+  <script src="qrcode.min.js"></script>
+
+  <script>
+    // Splash + initialization
+    window.addEventListener("load", function() {
+      var splash = document.getElementById("splash");
+      var appRoot = document.getElementById("app-root");
+      setTimeout(function() {
+        splash.classList.add("splash-hidden");
+        appRoot.classList.add("app-visible");
+        captureLocation();
+        loadFromStorage();
+        renderCurrentModuleList("");
+      }, 900);
+    });
+
+    // Global location + auto-context
+    var currentLocation = null;
+
+    function captureLocation() {
+      if (!navigator.geolocation) {
+        console.log("Geolocation not supported.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          currentLocation = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            accuracyMeters: pos.coords.accuracy,
+            altitudeMeters: pos.coords.altitude,
+            altitudeAccuracyMeters: pos.coords.altitudeAccuracy
+          };
+          console.log("Location captured:", currentLocation);
+        },
+        function(err) {
+          console.log("Geolocation error:", err.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 60000
+        }
+      );
+    }
+
+    function buildAutoContext() {
+      var now = new Date();
+      return {
+        capturedAtIso: now.toISOString(),
+        capturedAtLocal: now.toLocaleString(),
+        timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone || null),
+        language: navigator.language || null,
+        userAgent: navigator.userAgent || null,
+        online: navigator.onLine,
+        location: currentLocation
+      };
+    }
+
+    // Module state
+    var currentModule = "artifact";
+
+    var moduleMeta = {
+      artifact: { title: "Artifacts", listTitle: "Stored Artifacts", addLabel: "Add New Artifact" },
+      context: { title: "Context Sheets", listTitle: "Stored Context Sheets", addLabel: "Add New Context" },
+      gpr:     { title: "GPR Records", listTitle: "Stored GPR Records", addLabel: "Add New GPR Record" },
+      strat:   { title: "Stratigraphy Profiles", listTitle: "Stored Stratigraphy Profiles", addLabel: "Add New Strat Profile" }
+    };
+
+    function switchModule(module) {
+      currentModule = module;
+      ["artifact","context","gpr","strat"].forEach(function(m) {
+        var btn = document.getElementById("nav-" + m);
+        if (btn) btn.classList.toggle("active", m === module);
+      });
+      var meta = moduleMeta[module];
+      document.getElementById("module-title").textContent = meta.title;
+      document.getElementById("list-title").textContent = meta.listTitle;
+      document.getElementById("add-button-label").textContent = meta.addLabel;
+
+      ["artifact","context","gpr","strat"].forEach(function(m) {
+        var form = document.getElementById("form-" + m);
+        if (form) form.style.display = (m === module ? "block" : "none");
+      });
+
+      showFormMode();
+      document.getElementById("search-input").value = "";
+      renderCurrentModuleList("");
+    }
+
+    function onAddNewClicked() {
+      showFormMode();
+      if (currentModule === "artifact") resetArtifactForm();
+      if (currentModule === "context") resetContextForm();
+      if (currentModule === "gpr") resetGprForm();
+      if (currentModule === "strat") resetStratForm();
+    }
+
+    function showFormMode() {
+      document.getElementById("detail-view").style.display = "none";
+      var forms = document.querySelectorAll(".module-form");
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].style.display = (forms[i].id === "form-" + currentModule ? "block" : "none");
+      }
+      var meta = moduleMeta[currentModule];
+      document.getElementById("detail-title").textContent = "New " + meta.title.slice(0, -1);
+      document.getElementById("detail-subtitle").textContent = "Use voice + AI, auto-context, and QR tagging.";
+    }
+
+    // Record storage
+    var artifactRecords = [];
+    var contextRecords = [];
+    var gprRecords = [];
+    var stratRecords = [];
+
+    var STORAGE_KEY = "ARCH_HUB_RECORDS_V1";
+
+    function stripImagesForStorage(records) {
+      return records.map(function(r) {
+        var copy = JSON.parse(JSON.stringify(r));
+        if (copy.userInputContext && copy.userInputContext.imageUrl) {
+          copy.userInputContext.imageUrl = null;
+        }
+        return copy;
+      });
+    }
+
+    function persistAllToStorage() {
+      try {
+        var payload = {
+          artifactRecords: stripImagesForStorage(artifactRecords),
+          contextRecords: stripImagesForStorage(contextRecords),
+          gprRecords: stripImagesForStorage(gprRecords),
+          stratRecords: stripImagesForStorage(stratRecords)
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.log("Persist error:", e);
+      }
+    }
+
+    function loadFromStorage() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        var data = JSON.parse(raw);
+        if (data && Array.isArray(data.artifactRecords)) artifactRecords = data.artifactRecords;
+        if (data && Array.isArray(data.contextRecords)) contextRecords = data.contextRecords;
+        if (data && Array.isArray(data.gprRecords)) gprRecords = data.gprRecords;
+        if (data && Array.isArray(data.stratRecords)) stratRecords = data.stratRecords;
+      } catch (e) {
+        console.log("Load error:", e);
+      }
+    }
+
+    function exportAllData() {
+      var payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        artifactRecords: stripImagesForStorage(artifactRecords),
+        contextRecords: stripImagesForStorage(contextRecords),
+        gprRecords: stripImagesForStorage(gprRecords),
+        stratRecords: stripImagesForStorage(stratRecords)
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "arch-hub-data.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function handleImportFile(evt) {
+      var file = evt.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var obj = JSON.parse(e.target.result);
+          if (!obj || typeof obj !== "object") throw new Error("Not a JSON object");
+          artifactRecords = obj.artifactRecords || [];
+          contextRecords = obj.contextRecords || [];
+          gprRecords = obj.gprRecords || [];
+          stratRecords = obj.stratRecords || [];
+          persistAllToStorage();
+          renderCurrentModuleList(document.getElementById("search-input").value);
+          showNotification("Import successful.", "success");
+        } catch (err) {
+          console.error(err);
+          
+          showNotification("Import failed: " + err.message, "error");
+        } finally {
+          evt.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ARTIFACT MODULE
+    var inputPhotoCamera = document.getElementById("input-photo-camera");
+    var inputPhotoAlbum = document.getElementById("input-photo-album");
+    var photoPreview = document.getElementById("photo-preview");
+    var artifactPhotoDataUrl = null;
+
+    function handleArtifactPhotoFile(file) {
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        artifactPhotoDataUrl = e.target.result;
+        photoPreview.src = artifactPhotoDataUrl;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    inputPhotoCamera.addEventListener("change", function(e) {
+      handleArtifactPhotoFile(e.target.files[0]);
+    });
+
+    inputPhotoAlbum.addEventListener("change", function(e) {
+      handleArtifactPhotoFile(e.target.files[0]);
+    });
+
+    function extractFieldsFromObservationArtifact() {
+      var textRaw = document.getElementById("spoken-notes").value || "";
+      var text = textRaw.toLowerCase();
+
+      var typeInput = document.getElementById("field-artifact-type");
+      var gridInput = document.getElementById("field-grid");
+      var depthInput = document.getElementById("field-depth");
+      var notesInput = document.getElementById("field-notes");
+
+      if (text.indexOf("pottery") !== -1) typeInput.value = "Pottery fragment";
+      else if (text.indexOf("bone") !== -1) typeInput.value = "Bone fragment";
+      else if (text.indexOf("metal") !== -1) typeInput.value = "Metal object";
+      else if (text.indexOf("coin") !== -1) typeInput.value = "Coin";
+      else if (!typeInput.value) typeInput.value = "Artifact from observation";
+
+      // simple grid guess: look for pattern like "a4" or "b10"
+      var words = text.split(/\s+/);
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/[^a-z0-9]/g, "");
+        if (w.length >= 2 && isNaN(parseInt(w.charAt(0), 10))) {
+          var letter = w.charAt(0);
+          var num = w.slice(1);
+          if (!isNaN(parseInt(num, 10))) {
+            gridInput.value = letter.toUpperCase() + num;
+            break;
+          }
+        }
+      }
+
+      // depth guess: first number followed by "cm"
+      var depthMatch = text.match(/(\d+)\s*cm/);
+      if (depthMatch) depthInput.value = depthMatch[1];
+
+      if (!notesInput.value && textRaw.trim()) {
+        notesInput.value = textRaw.trim();
+      }
+    }
+
+    function autoSuggestArtifactTags() {
+      var type = (document.getElementById("field-artifact-type").value || "").toLowerCase();
+      var notes = (document.getElementById("field-notes").value || "").toLowerCase();
+      var tags = [];
+
+      if (type.indexOf("pottery") !== -1) { tags.push("Pottery","Ceramic"); }
+      if (type.indexOf("bone") !== -1)    { tags.push("Bone","Organic"); }
+      if (type.indexOf("metal") !== -1)   { tags.push("Metal"); }
+      if (type.indexOf("coin") !== -1)    { tags.push("Coin","Currency"); }
+      if (notes.indexOf("fire") !== -1)   { tags.push("Fire pit"); }
+      if (notes.indexOf("wall") !== -1)   { tags.push("Near wall"); }
+
+      // unique
+      var unique = [];
+      for (var i = 0; i < tags.length; i++) {
+        if (unique.indexOf(tags[i]) === -1) unique.push(tags[i]);
+      }
+      var tagText = unique.length
+        ? "Suggested tags: " + unique.join(", ")
+        : "No special tags detected.";
+
+      document.getElementById("tag-suggestions").textContent = tagText;
+      return unique;
+    }
+
+    function saveArtifact() {
+      var textNotes = (document.getElementById("spoken-notes").value || "").trim();
+      var notes = (document.getElementById("field-notes").value || "").trim();
+      var artifactType = (document.getElementById("field-artifact-type").value || "").trim();
+      var grid = (document.getElementById("field-grid").value || "").trim();
+      var depthStr = (document.getElementById("field-depth").value || "").trim();
+      var siteName = (document.getElementById("field-site").value || "").trim();
+
+      if (!artifactType || !grid) {
+        
+        showNotification("Artifact type and Grid are required.", "error");
+        return;
+      }
+
+      var depthCm = depthStr ? parseInt(depthStr, 10) : null;
+      var tags = autoSuggestArtifactTags();
+
+      var id = "A-" + Date.now();
+      var qrPayload = "ARCHHUB:ART:" + id;
+
+      var userInputContext = {
+        textNotes: textNotes,
+        imageDataUrl: artifactPhotoDataUrl || null,
+        manualFields: { notes: notes, siteName: siteName },
+        autoContext: buildAutoContext()
+      };
+
+      var aiOutputStructured = {
+        artifactType: artifactType,
+        grid: grid,
+        depthCm: depthCm,
+        tags: tags,
+        siteName: siteName
+      };
+
+      var record = {
+        id: id,
+        recordType: "artifact",
+        userInputContext: userInputContext,
+        aiOutputStructured: aiOutputStructured,
+        confirmedByUser: true,
+        createdAt: new Date().toISOString(),
+        qrPayload: qrPayload
+      };
+
+      artifactRecords.push(record);
+      persistAllToStorage();
+      showNotification("Artifact saved with ID: " + id, "success");
+      renderCurrentModuleList("");
+      showArtifactDetail(id);
+    }
+
+    function resetArtifactForm() {
+      document.getElementById("spoken-notes").value = "";
+      document.getElementById("field-artifact-type").value = "";
+      document.getElementById("field-grid").value = "";
+      document.getElementById("field-depth").value = "";
+      document.getElementById("field-site").value = "";
+      document.getElementById("field-notes").value = "";
+      document.getElementById("tag-suggestions").textContent = "";
+      if (artifactPhotoUrl) {
+        URL.revokeObjectURL(artifactPhotoUrl);
+        artifactPhotoUrl = null;
+      }
+      photoPreview.src = "";
+    }
+
+    // CONTEXT MODULE
+    function extractFieldsFromObservationContext() {
+      var textRaw = document.getElementById("ctx-notes").value || "";
+      var text = textRaw.toLowerCase();
+
+      var trench = document.getElementById("ctx-trench");
+      var layer = document.getElementById("ctx-layer");
+      var feature = document.getElementById("ctx-feature");
+      var summary = document.getElementById("ctx-summary");
+
+      var trenchMatch = text.match(/trench\s+([a-z0-9]+)/);
+      if (trenchMatch) trench.value = trenchMatch[1].toUpperCase();
+
+      var layerMatch = text.match(/layer\s+(\d+)/);
+      if (layerMatch) layer.value = layerMatch[1];
+
+      if (text.indexOf("wall") !== -1) feature.value = "Wall";
+      else if (text.indexOf("hearth") !== -1) feature.value = "Hearth";
+      else if (text.indexOf("pit") !== -1) feature.value = "Pit";
+      else if (!feature.value) feature.value = "Archaeological feature";
+
+      if (!summary.value && textRaw.trim()) {
+        summary.value = textRaw.trim().slice(0, 200);
+      }
+    }
+
+    function saveContextSheet() {
+      var siteName = (document.getElementById("ctx-site").value || "").trim();
+      var trenchId = (document.getElementById("ctx-trench").value || "").trim();
+      var layerId = (document.getElementById("ctx-layer").value || "").trim();
+      var gridRange = (document.getElementById("ctx-gridrange").value || "").trim();
+      var featureType = (document.getElementById("ctx-feature").value || "").trim();
+      var description = (document.getElementById("ctx-notes").value || "").trim();
+      var summary = (document.getElementById("ctx-summary").value || "").trim();
+
+      if (!siteName || !trenchId || !layerId) {
+        
+        showNotification("Site, Trench and Layer are required.", "error");
+        return;
+      }
+
+      var id = "CTX-" + Date.now();
+      var qrPayload = "ARCHHUB:CTX:" + id;
+
+      var userInputContext = {
+        textNotes: description,
+        imageUrl: null,
+        manualFields: { siteName: siteName },
+        autoContext: buildAutoContext()
+      };
+
+      var aiOutputStructured = {
+        siteName: siteName,
+        trenchId: trenchId,
+        layerId: layerId,
+        featureType: featureType,
+        gridRange: gridRange,
+        summary: summary
+      };
+
+      var record = {
+        id: id,
+        recordType: "context_sheet",
+        userInputContext: userInputContext,
+        aiOutputStructured: aiOutputStructured,
+        confirmedByUser: true,
+        createdAt: new Date().toISOString(),
+        qrPayload: qrPayload
+      };
+
+      contextRecords.push(record);
+      persistAllToStorage();
+      showNotification("Context sheet saved with ID: " + id, "success");
+      renderCurrentModuleList("");
+      showContextDetail(id);
+    }
+
+    function resetContextForm() {
+      document.getElementById("ctx-site").value = "";
+      document.getElementById("ctx-trench").value = "";
+      document.getElementById("ctx-layer").value = "";
+      document.getElementById("ctx-gridrange").value = "";
+      document.getElementById("ctx-feature").value = "";
+      document.getElementById("ctx-notes").value = "";
+      document.getElementById("ctx-summary").value = "";
+    }
+
+    // GPR MODULE
+    var gprPreview = document.getElementById("gpr-preview");
+    var gprImageInput = document.getElementById("gpr-image-input");
+    var gprImageDataUrl = null;
+
+    gprImageInput.addEventListener("change", function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        gprImageDataUrl = ev.target.result;
+        gprPreview.src = gprImageDataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function saveGprRecord() {
+      var areaName = (document.getElementById("gpr-area").value || "").trim();
+      var depthRange = (document.getElementById("gpr-depth").value || "").trim();
+      var anomalyType = (document.getElementById("gpr-anomaly").value || "").trim();
+      var notes = (document.getElementById("gpr-notes").value || "").trim();
+      var confidence = (document.getElementById("gpr-confidence").value || "").trim();
+
+      if (!areaName || !depthRange) {
+        
+        showNotification("Area/Profile and Depth range are required.", "error");
+        return;
+      }
+
+      var id = "GPR-" + Date.now();
+      var qrPayload = "ARCHHUB:GPR:" + id;
+
+      var userInputContext = {
+        textNotes: notes,
+        imageDataUrl: gprImageDataUrl || null,
+        manualFields: { areaName: areaName },
+        autoContext: buildAutoContext()
+      };
+
+      var aiOutputStructured = {
+        areaName: areaName,
+        depthRangeCm: depthRange,
+        anomalyType: anomalyType,
+        confidenceLabel: confidence || "Medium",
+        notesSummary: notes ? notes.slice(0, 200) : "",
+        overlays: [
+          { type: "anomaly", left: 18, top: 40, width: 26, height: 14 },
+          { type: "anomaly", left: 52, top: 55, width: 22, height: 12 },
+          { type: "boundary", left: 5, top: 68, width: 90, height: 6 }
+        ]
+      };
+
+      var record = {
+        id: id,
+        recordType: "gpr_record",
+        userInputContext: userInputContext,
+        aiOutputStructured: aiOutputStructured,
+        confirmedByUser: true,
+        createdAt: new Date().toISOString(),
+        qrPayload: qrPayload
+      };
+
+      gprRecords.push(record);
+      persistAllToStorage();
+      showNotification("GPR record saved with ID: " + id, "success");
+      renderCurrentModuleList("");
+      showGprDetail(id);
+    }
+
+    function resetGprForm() {
+      document.getElementById("gpr-area").value = "";
+      document.getElementById("gpr-depth").value = "";
+      document.getElementById("gpr-anomaly").value = "";
+      document.getElementById("gpr-notes").value = "";
+      document.getElementById("gpr-confidence").value = "";
+      if (gprImageUrl) {
+        URL.revokeObjectURL(gprImageUrl);
+        gprImageUrl = null;
+      }
+      gprPreview.src = "";
+    }
+
+    // STRAT MODULE
+    var stratPreview = document.getElementById("strat-preview");
+    var stratPhotoInput = document.getElementById("strat-photo-input");
+    var stratPhotoDataUrl = null;
+
+    stratPhotoInput.addEventListener("change", function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        stratPhotoDataUrl = ev.target.result;
+        stratPreview.src = stratPhotoDataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function saveStratProfile() {
+      var siteName = (document.getElementById("strat-site").value || "").trim();
+      var layerCountStr = (document.getElementById("strat-layers").value || "").trim();
+      var keyLayersSummary = (document.getElementById("strat-key").value || "").trim();
+      var profileSummary = (document.getElementById("strat-summary").value || "").trim();
+
+      if (!siteName || !layerCountStr) {
+        
+        showNotification("Site and Layer count are required.", "error");
+        return;
+      }
+
+      var layerCount = parseInt(layerCountStr, 10);
+      if (isNaN(layerCount)) layerCount = null;
+
+      var id = "STR-" + Date.now();
+      var qrPayload = "ARCHHUB:STR:" + id;
+
+      var userInputContext = {
+        textNotes: profileSummary,
+        imageDataUrl: stratPhotoDataUrl || null,
+        manualFields: { siteName: siteName },
+        autoContext: buildAutoContext()
+      };
+
+      var aiOutputStructured = {
+        siteName: siteName,
+        layerCount: layerCount,
+        keyLayersSummary: keyLayersSummary,
+        profileSummary: profileSummary,
+        overlays: (function() {
+          var overlays = [];
+          if (layerCount && layerCount > 0) {
+            var baseTop = 15;
+            var usableHeight = 70;
+            var step = usableHeight / (layerCount + 1);
+            for (var i = 1; i <= layerCount; i++) {
+              var top = baseTop + i * step;
+              overlays.push({ type: "layer", left: 5, top: top, width: 90, height: 4 });
+            }
+          }
+          overlays.push({ type: "feature", left: 18, top: 42, width: 22, height: 10 });
+          return overlays;
+        })()
+      };
+
+      var record = {
+        id: id,
+        recordType: "stratigraphy_profile",
+        userInputContext: userInputContext,
+        aiOutputStructured: aiOutputStructured,
+        confirmedByUser: true,
+        createdAt: new Date().toISOString(),
+        qrPayload: qrPayload
+      };
+
+      stratRecords.push(record);
+      persistAllToStorage();
+      showNotification("Stratigraphy profile saved with ID: " + id, "success");
+      renderCurrentModuleList("");
+      showStratDetail(id);
+    }
+
+    function resetStratForm() {
+      document.getElementById("strat-site").value = "";
+      document.getElementById("strat-layers").value = "";
+      document.getElementById("strat-key").value = "";
+      document.getElementById("strat-summary").value = "";
+      if (stratPhotoUrl) {
+        URL.revokeObjectURL(stratPhotoUrl);
+        stratPhotoUrl = null;
+      }
+      stratPreview.src = "";
+    }
+
+    // Shared list + search
+    function onSearchChange(text) {
+      renderCurrentModuleList(text);
+    }
+
+    function renderCurrentModuleList(filterText) {
+      var listEl = document.getElementById("record-list");
+      var labelEl = document.getElementById("record-count-label");
+      var q = (filterText || "").toLowerCase().trim();
+
+      var records;
+      if (currentModule === "artifact") records = artifactRecords;
+      else if (currentModule === "context") records = contextRecords;
+      else if (currentModule === "gpr") records = gprRecords;
+      else records = stratRecords;
+
+      var filtered = records;
+      if (q) {
+        filtered = records.filter(function(rec) {
+          var haystack = JSON.stringify(rec).toLowerCase();
+          return haystack.indexOf(q) !== -1;
+        });
+      }
+
+      labelEl.textContent = records.length + (records.length === 1 ? " record" : " records");
+
+      if (!filtered.length) {
+        listEl.innerHTML = "<p class='info-text small'>No records yet. Use the button above to add one.</p>";
+        return;
+      }
+
+      var html = "";
+      for (var i = 0; i < filtered.length; i++) {
+        html += renderCardForRecord(filtered[i]);
+      }
+      listEl.innerHTML = html;
+    }
+
+    function renderCardForRecord(rec) {
+      var recordType = rec.recordType;
+      var userInputContext = rec.userInputContext || {};
+      var aiOutputStructured = rec.aiOutputStructured || {};
+      var createdAt = rec.createdAt;
+      var imgUrl = userInputContext.imageDataUrl || userInputContext.imageUrl;
+      var when = createdAt ? new Date(createdAt).toLocaleString() : "";
+
+      var html = "";
+      if (recordType === "artifact") {
+        var type = aiOutputStructured.artifactType || "Artifact";
+        var grid = aiOutputStructured.grid || "";
+        var depth = (aiOutputStructured.depthCm != null) ? (aiOutputStructured.depthCm + " cm") : "";
+        var site = aiOutputStructured.siteName || "";
+        var subtitleParts = [];
+        if (grid) subtitleParts.push("Grid " + grid);
+        if (depth) subtitleParts.push(depth);
+        var subtitle = subtitleParts.join(" · ");
+
+        html += "<div class=\"record-card\" onclick=\"showArtifactDetail('" + rec.id + "')\">";
+        if (imgUrl) {
+          html += "<img src=\"" + imgUrl + "\" class=\"thumb\" alt=\"Artifact image\" />";
+        } else {
+          html += "<div class=\"thumb\">No photo</div>";
+        }
+        html += "<div class=\"record-meta\">";
+        html += "<p class=\"card-title\">" + escapeHtml(type) + "</p>";
+        html += "<p class=\"card-subtitle\">" + (subtitle || "<span class='muted small'>No grid/depth</span>") + "</p>";
+        html += "<p class=\"small muted\">" + (site ? escapeHtml(site) + " – " : "") + when + "</p>";
+        html += "</div></div>";
+        return html;
+      }
+
+      if (recordType === "context_sheet") {
+        var site2 = aiOutputStructured.siteName || "Unknown site";
+        var trench = aiOutputStructured.trenchId || "?";
+        var layer = aiOutputStructured.layerId || "?";
+        var feature = aiOutputStructured.featureType || "Feature";
+        html += "<div class=\"record-card\" onclick=\"showContextDetail('" + rec.id + "')\">";
+        html += "<div class=\"thumb\">CTX</div>";
+        html += "<div class=\"record-meta\">";
+        html += "<p class=\"card-title\">" + escapeHtml(site2) + " – " + escapeHtml(feature) + "</p>";
+        html += "<p class=\"card-subtitle\">Trench " + escapeHtml(trench) + ", Layer " + escapeHtml(layer) + "</p>";
+        html += "<p class=\"small muted\">" + when + "</p>";
+        html += "</div></div>";
+        return html;
+      }
+
+      if (recordType === "gpr_record") {
+        var area = aiOutputStructured.areaName || "Area";
+        var depthRange = aiOutputStructured.depthRangeCm || "";
+        var anomaly = aiOutputStructured.anomalyType || "Anomaly";
+        html += "<div class=\"record-card\" onclick=\"showGprDetail('" + rec.id + "')\">";
+        if (imgUrl) {
+          html += "<img src=\"" + imgUrl + "\" class=\"thumb\" alt=\"GPR image\" />";
+        } else {
+          html += "<div class=\"thumb\">GPR</div>";
+        }
+        html += "<div class=\"record-meta\">";
+        html += "<p class=\"card-title\">" + escapeHtml(anomaly) + "</p>";
+        html += "<p class=\"card-subtitle\">" + escapeHtml(area) + (depthRange ? " – " + escapeHtml(depthRange) + " cm" : "") + "</p>";
+        html += "<p class=\"small muted\">" + when + "</p>";
+        html += "</div></div>";
+        return html;
+      }
+
+      if (recordType === "stratigraphy_profile") {
+        var site3 = aiOutputStructured.siteName || "Site";
+        var layers = (aiOutputStructured.layerCount != null) ? (aiOutputStructured.layerCount + " layers") : "Layers ?";
+        html += "<div class=\"record-card\" onclick=\"showStratDetail('" + rec.id + "')\">";
+        if (imgUrl) {
+          html += "<img src=\"" + imgUrl + "\" class=\"thumb\" alt=\"Stratigraphy image\" />";
+        } else {
+          html += "<div class=\"thumb\">STRAT</div>";
+        }
+        html += "<div class=\"record-meta\">";
+        html += "<p class=\"card-title\">" + escapeHtml(site3) + "</p>";
+        html += "<p class=\"card-subtitle\">" + layers + "</p>";
+        html += "<p class=\"small muted\">" + when + "</p>";
+        html += "</div></div>";
+        return html;
+      }
+      return html;
+    }
+
+    // Detail views
+    function showArtifactDetail(id) {
+      var rec = artifactRecords.find(function(r) { return r.id === id; });
+      if (!rec) return;
+      currentModule = "artifact";
+      switchModule("artifact");
+      buildArtifactDetail(rec);
+    }
+
+    function buildArtifactDetail(record) {
+      var detailView = document.getElementById("detail-view");
+      document.getElementById("detail-title").textContent = "Artifact Detail";
+      document.getElementById("detail-subtitle").textContent = "Human input + AI-structured fields + auto-context + QR.";
+      var forms = document.querySelectorAll(".module-form");
+      for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
+      detailView.style.display = "block";
+
+      var userInputContext = record.userInputContext || {};
+      var aiOutputStructured = record.aiOutputStructured || {};
+      var createdAt = record.createdAt;
+      var qrPayload = record.qrPayload;
+      var textNotes = userInputContext.textNotes || "";
+      var imageDataUrl = userInputContext.imageDataUrl || userInputContext.imageUrl;
+
+      var manualFields = userInputContext.manualFields || {};
+      var autoContext = userInputContext.autoContext || {};
+      var artifactType = aiOutputStructured.artifactType || "Unknown";
+      var grid = aiOutputStructured.grid || "";
+      var depthCm = aiOutputStructured.depthCm;
+      var tags = aiOutputStructured.tags || [];
+      var siteName = aiOutputStructured.siteName || "";
+
+      var tagsHtml = tags.length ? tags.map(function(t){return "<span class='pill'>" + escapeHtml(t) + "</span>";}).join(" ") : "<span class='muted small'>No tags</span>";
+      var depthHtml = (depthCm != null) ? (depthCm + " cm") : "<span class='muted'>Not recorded</span>";
+      var photoHtml = imageDataUrl
+        ? "<img src='" + imageDataUrl + "' class='photo-preview' alt='Artifact photo' />"
+        : "<div class='photo-preview' style='display:flex;align-items:center;justify-content:center;'><span class='small muted'>No photo captured (not persisted across reloads)</span></div>";
+
+      var autoContextHtml = renderAutoContext(autoContext);
+
+      var html = "";
+      html += "<p class='info-text small'>record_type = &quot;artifact&quot; • user_input_context • ai_output_structured • auto_context • QR payload</p>";
+      html += "<div class='info-text small'><strong>Record ID:</strong> <span class='id-highlight'>" + record.id + "</span><br/>";
+      html += "<strong>Created:</strong> " + (createdAt ? new Date(createdAt).toLocaleString() : "") + "</div><hr/>";
+      html += "<h4>Human Input</h4>";
+      html += photoHtml;
+      html += "<p class='small' style='margin-top:6px;'><strong>Observation:</strong><br/>" + (textNotes ? escapeHtml(textNotes) : "<span class='muted'>No observation text</span>") + "</p>";
+      html += "<p class='small'><strong>Manual notes:</strong><br/>" + (manualFields.notes ? escapeHtml(manualFields.notes) : "<span class='muted'>No extra notes</span>") + "</p>";
+      html += "<p class='small'><strong>Site name:</strong> " + (siteName ? escapeHtml(siteName) : "<span class='muted'>Not set</span>") + "</p><hr/>";
+      html += "<h4>Automatic Context</h4>" + autoContextHtml + "<hr/>";
+      html += "<h4>AI-Structured Fields</h4>";
+      html += "<p class='small'><strong>Artifact type:</strong> " + escapeHtml(artifactType) + "<br/>";
+      html += "<strong>Grid:</strong> " + (grid ? escapeHtml(grid) : "<span class='muted'>Not set</span>") + "<br/>";
+      html += "<strong>Depth:</strong> " + depthHtml + "<br/>";
+      html += "<strong>Tags:</strong> " + tagsHtml + "</p><hr/>";
+      html += "<h4>QR Tag for Retrieval</h4>";
+      html += "<p class='small'>QR payload: <code>" + qrPayload + "</code></p>";
+      html += "<div class='qr-box'><div id='qr-container'></div></div>";
+      html += "<div class='row-inline' style='margin-top:10px;'><button type='button' class='secondary' onclick='window.print()'>🖨️ Print</button>";
+      html += "<button type='button' class='secondary' onclick='onAddNewClicked()'>➕ New artifact</button></div>";
+
+      detailView.innerHTML = html;
+      renderQrCode(qrPayload);
+    }
+
+    function showContextDetail(id) {
+      var rec = contextRecords.find(function(r) { return r.id === id; });
+      if (!rec) return;
+      currentModule = "context";
+      switchModule("context");
+      var detailView = document.getElementById("detail-view");
+      document.getElementById("detail-title").textContent = "Context Sheet Detail";
+      document.getElementById("detail-subtitle").textContent = "Context sheet with auto-context + QR.";
+      var forms = document.querySelectorAll(".module-form");
+      for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
+      detailView.style.display = "block";
+
+      var userInputContext = rec.userInputContext || {};
+      var aiOutputStructured = rec.aiOutputStructured || {};
+      var createdAt = rec.createdAt;
+      var qrPayload = rec.qrPayload;
+      var textNotes = userInputContext.textNotes || "";
+      var autoContext = userInputContext.autoContext || {};
+      var siteName = aiOutputStructured.siteName || "";
+      var trenchId = aiOutputStructured.trenchId || "";
+      var layerId = aiOutputStructured.layerId || "";
+      var featureType = aiOutputStructured.featureType || "Feature";
+      var gridRange = aiOutputStructured.gridRange || "";
+      var summary = aiOutputStructured.summary || "";
+
+      var autoContextHtml = renderAutoContext(autoContext);
+
+      var html = "";
+      html += "<p class='info-text small'>record_type = &quot;context_sheet&quot; • user_input_context • ai_output_structured • auto_context • QR payload</p>";
+      html += "<div class='info-text small'><strong>Record ID:</strong> <span class='id-highlight'>" + rec.id + "</span><br/>";
+      html += "<strong>Created:</strong> " + (createdAt ? new Date(createdAt).toLocaleString() : "") + "</div><hr/>";
+      html += "<h4>Context Fields</h4>";
+      html += "<p class='small'><strong>Site:</strong> " + escapeHtml(siteName) + "<br/>";
+      html += "<strong>Trench:</strong> " + escapeHtml(trenchId) + "<br/>";
+      html += "<strong>Layer:</strong> " + escapeHtml(layerId) + "<br/>";
+      html += "<strong>Feature:</strong> " + escapeHtml(featureType) + "<br/>";
+      html += "<strong>Grid range:</strong> " + (gridRange ? escapeHtml(gridRange) : "<span class='muted'>Not set</span>") + "</p>";
+      html += "<p class='small'><strong>Description:</strong><br/>" + (textNotes ? escapeHtml(textNotes) : "<span class='muted'>No description</span>") + "</p>";
+      html += "<p class='small'><strong>Summary:</strong><br/>" + (summary ? escapeHtml(summary) : "<span class='muted'>No summary</span>") + "</p><hr/>";
+      html += "<h4>Automatic Context</h4>" + autoContextHtml + "<hr/>";
+      html += "<h4>QR Tag for Retrieval</h4>";
+      html += "<p class='small'>QR payload: <code>" + qrPayload + "</code></p>";
+      html += "<div class='qr-box'><div id='qr-container'></div></div>";
+      html += "<div class='row-inline' style='margin-top:10px;'><button type='button' class='secondary' onclick='window.print()'>🖨️ Print</button>";
+      html += "<button type='button' class='secondary' onclick='onAddNewClicked()'>➕ New context</button></div>";
+
+      detailView.innerHTML = html;
+      renderQrCode(qrPayload);
+    }
+
+    function showGprDetail(id) {
+      var rec = gprRecords.find(function(r) { return r.id === id; });
+      if (!rec) return;
+
+      currentModule = "gpr";
+      switchModule("gpr");
+
+      var detailView = document.getElementById("detail-view");
+      document.getElementById("detail-title").textContent = "GPR Record Detail";
+      document.getElementById("detail-subtitle").textContent = "GPR slice + interpretation + auto-context + QR.";
+      var forms = document.querySelectorAll(".module-form");
+      for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
+      detailView.style.display = "block";
+
+      var userInputContext = rec.userInputContext || {};
+      var aiOutputStructured = rec.aiOutputStructured || {};
+      var createdAt = rec.createdAt;
+      var qrPayload = rec.qrPayload;
+
+      var textNotes = userInputContext.textNotes || "";
+      var imageDataUrl = (userInputContext.imageDataUrl || userInputContext.imageUrl) || null;
+      var autoContext = userInputContext.autoContext || {};
+
+      var areaName = aiOutputStructured.areaName || "";
+      var depthRangeCm = aiOutputStructured.depthRangeCm || "";
+      var anomalyType = aiOutputStructured.anomalyType || "Anomaly";
+      var confidenceLabel = aiOutputStructured.confidenceLabel || "Medium";
+      var overlays = aiOutputStructured.overlays || [];
+
+      var baseImgHtml = imageDataUrl
+        ? "<img src='" + imageDataUrl + "' class='overlay-base-img' alt='GPR image' />"
+        : "<div class='photo-preview' style='display:flex;align-items:center;justify-content:center;'><span class='muted small'>No GPR image</span></div>";
+
+      var overlayHtml = "";
+      if (imageDataUrl && overlays && overlays.length) {
+        for (var i = 0; i < overlays.length; i++) {
+          var o = overlays[i];
+          var cls = "overlay-layer overlay-layer-gpr " + (o.type || "anomaly");
+          overlayHtml += "<div class='" + cls + "' style='left:" + o.left + "%;top:" + o.top + "%;width:" + o.width + "%;height:" + o.height + "%;'></div>";
+        }
+      }
+
+      var autoContextHtml = renderAutoContext(autoContext);
+
+      var html = "";
+      html += "<p class='info-text small'>record_type = &quot;gpr_record&quot; • user_input_context • ai_output_structured • auto_context • QR payload</p>";
+      html += "<div class='info-text small'><strong>Record ID:</strong> <span class='id-highlight'>" + rec.id + "</span><br/>";
+      html += "<strong>Created:</strong> " + (createdAt ? new Date(createdAt).toLocaleString() : "") + "</div><hr/>";
+      html += "<h4>GPR Slice</h4>";
+      html += "<div class='overlay-viewer' id='gpr-overlay-viewer'>";
+      html += baseImgHtml;
+      html += overlayHtml;
+      html += "</div>";
+
+      if (imageDataUrl) {
+        html += "<div class='overlay-toolbar'>";
+        html += "<button type='button' class='secondary' onclick=\"setOverlayMode('gpr','raw')\">Raw</button>";
+        html += "<button type='button' class='secondary' onclick=\"setOverlayMode('gpr','overlay')\">Overlay</button>";
+        html += "<label>Opacity <input type='range' min='0' max='100' value='40' oninput=\"setOverlayOpacity('gpr', this.value)\"></label>";
+        html += "</div>";
+      }
+
+      html += "<p class='small' style='margin-top:6px;'><strong>Area/Profile:</strong> " + escapeHtml(areaName) + "<br/>";
+      html += "<strong>Depth range:</strong> " + escapeHtml(depthRangeCm) + " cm<br/>";
+      html += "<strong>Anomaly:</strong> " + escapeHtml(anomalyType) + "<br/>";
+      html += "<strong>Confidence:</strong> " + escapeHtml(confidenceLabel) + "</p>";
+      html += "<p class='small'><strong>Interpretation notes:</strong> " + (textNotes ? escapeHtml(textNotes) : "<span class='muted'>No notes</span>") + "</p><hr/>";
+      html += "<h4>Automatic Context</h4>" + autoContextHtml + "<hr/>";
+      html += "<h4>QR Tag for Retrieval</h4>";
+      html += "<p class='small'>QR payload: <code>" + qrPayload + "</code></p>";
+      html += "<div class='qr-box'><div id='qr-container'></div></div>";
+      html += "<div class='row-inline' style='margin-top:10px;'><button type='button' class='secondary' onclick='window.print()'>🖨️ Print</button>";
+      html += "<button type='button' class='secondary' onclick='onAddNewClicked()'>➕ New GPR record</button></div>";
+
+      detailView.innerHTML = html;
+      renderQrCode(qrPayload);
+      // Initialize overlay default state (overlay mode + 40% opacity)
+      setOverlayMode('gpr', 'overlay');
+      setOverlayOpacity('gpr', 40);
+    }
+
+    function showStratDetail(id) {
+      var rec = stratRecords.find(function(r) { return r.id === id; });
+      if (!rec) return;
+
+      currentModule = "strat";
+      switchModule("strat");
+
+      var detailView = document.getElementById("detail-view");
+      document.getElementById("detail-title").textContent = "Stratigraphy Profile Detail";
+      document.getElementById("detail-subtitle").textContent = "Stratigraphy wall + layers + auto-context + QR.";
+      var forms = document.querySelectorAll(".module-form");
+      for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
+      detailView.style.display = "block";
+
+      var userInputContext = rec.userInputContext || {};
+      var aiOutputStructured = rec.aiOutputStructured || {};
+      var createdAt = rec.createdAt;
+      var qrPayload = rec.qrPayload;
+
+      var profileSummary = userInputContext.textNotes || "";
+      var imageDataUrl = (userInputContext.imageDataUrl || userInputContext.imageUrl) || null;
+      var autoContext = userInputContext.autoContext || {};
+
+      var siteName = aiOutputStructured.siteName || "";
+      var layerCount = aiOutputStructured.layerCount;
+      var keyLayersSummary = aiOutputStructured.keyLayersSummary || "";
+      var overlays = aiOutputStructured.overlays || [];
+      var layersText = (layerCount != null) ? (layerCount + " layers") : "Unknown layer count";
+
+      var baseImgHtml = imageDataUrl
+        ? "<img src='" + imageDataUrl + "' class='overlay-base-img' alt='Stratigraphy image' />"
+        : "<div class='photo-preview' style='display:flex;align-items:center;justify-content:center;'><span class='muted small'>No stratigraphy photo</span></div>";
+
+      var overlayHtml = "";
+      if (imageDataUrl && overlays && overlays.length) {
+        for (var i = 0; i < overlays.length; i++) {
+          var o = overlays[i];
+          var cls = "overlay-layer overlay-layer-strat " + (o.type || "layer");
+          overlayHtml += "<div class='" + cls + "' style='left:" + o.left + "%;top:" + o.top + "%;width:" + o.width + "%;height:" + o.height + "%;'></div>";
+        }
+      }
+
+      var autoContextHtml = renderAutoContext(autoContext);
+
+      var html = "";
+      html += "<p class='info-text small'>record_type = &quot;stratigraphy_profile&quot; • user_input_context • ai_output_structured • auto_context • QR payload</p>";
+      html += "<div class='info-text small'><strong>Record ID:</strong> <span class='id-highlight'>" + rec.id + "</span><br/>";
+      html += "<strong>Created:</strong> " + (createdAt ? new Date(createdAt).toLocaleString() : "") + "</div><hr/>";
+      html += "<h4>Stratigraphy Wall</h4>";
+      html += "<div class='overlay-viewer' id='strat-overlay-viewer'>";
+      html += baseImgHtml;
+      html += overlayHtml;
+      html += "</div>";
+
+      if (imageDataUrl) {
+        html += "<div class='overlay-toolbar'>";
+        html += "<button type='button' class='secondary' onclick=\"setOverlayMode('strat','raw')\">Raw</button>";
+        html += "<button type='button' class='secondary' onclick=\"setOverlayMode('strat','overlay')\">Overlay</button>";
+        html += "<label>Opacity <input type='range' min='0' max='100' value='40' oninput=\"setOverlayOpacity('strat', this.value)\"></label>";
+        html += "</div>";
+      }
+
+      html += "<p class='small' style='margin-top:6px;'><strong>Site:</strong> " + escapeHtml(siteName) + "<br/>";
+      html += "<strong>Layers:</strong> " + escapeHtml(layersText) + "</p>";
+      html += "<p class='small'><strong>Key layers:</strong> " + (keyLayersSummary ? escapeHtml(keyLayersSummary) : "<span class='muted'>No key layers summary</span>") + "</p>";
+      html += "<p class='small'><strong>Profile notes:</strong> " + (profileSummary ? escapeHtml(profileSummary) : "<span class='muted'>No profile notes</span>") + "</p><hr/>";
+      html += "<h4>Automatic Context</h4>" + autoContextHtml + "<hr/>";
+      html += "<h4>QR Tag for Retrieval</h4>";
+      html += "<p class='small'>QR payload: <code>" + qrPayload + "</code></p>";
+      html += "<div class='qr-box'><div id='qr-container'></div></div>";
+      html += "<div class='row-inline' style='margin-top:10px;'><button type='button' class='secondary' onclick='window.print()'>🖨️ Print</button>";
+      html += "<button type='button' class='secondary' onclick='onAddNewClicked()'>➕ New Stratigraphy profile</button></div>";
+
+      detailView.innerHTML = html;
+      renderQrCode(qrPayload);
+      setOverlayMode('strat', 'overlay');
+      setOverlayOpacity('strat', 40);
+    }
+
+    // Auto-context rendering + QR
+    function renderAutoContext(autoContext) {
+      if (!autoContext) {
+        return "<span class='muted small'>No auto context captured.</span>";
+      }
+      var loc = autoContext.location;
+      var locLine = "<span class='muted'>Not available</span>";
+      if (loc && typeof loc.lat === "number" && typeof loc.lon === "number") {
+        var altStr = (typeof loc.altitudeMeters === "number") ? (loc.altitudeMeters.toFixed(1) + " m") : "unknown";
+        locLine = "Lat " + loc.lat.toFixed(5) + ", Lon " + loc.lon.toFixed(5) +
+          " (± " + (loc.accuracyMeters != null ? loc.accuracyMeters.toFixed(1) + " m" : "?") +
+          "), Altitude: " + altStr;
+      }
+      var html = "";
+      html += "<p class='small'><strong>Captured (local):</strong> " + escapeHtml(autoContext.capturedAtLocal || "") + "<br/>";
+      html += "<strong>Timezone:</strong> " + escapeHtml(autoContext.timezone || "Unknown") + "<br/>";
+      html += "<strong>Online:</strong> " + (autoContext.online ? "Yes" : "No") + "<br/>";
+      html += "<strong>GPS:</strong> " + locLine + "</p>";
+      return html;
+    }
+
+    
+    function renderQrCode(text) {
+      var container = document.getElementById("qr-container");
+      container.innerHTML = "";
+      try {
+        if (typeof QRCode !== "undefined") {
+          new QRCode(container, { text: text, width: 160, height: 160 });
+          
+          showNotification("QR code generated. You can print or scan it.", "info");
+        } else {
+          
+          showNotification("QR library not found. Check qrcode.min.js is in the same folder and loaded.", "error");
+          var placeholder2 = document.createElement("div");
+          placeholder2.className = "qr-placeholder";
+          placeholder2.innerHTML = "QR library missing:<br/><code class='small'>" + escapeHtml(text) + "</code>";
+          container.appendChild(placeholder2);
+        }
+      } catch (e) {
+        console.log("QRCode error:", e);
+        
+        showNotification("Error generating QR code: " + e.message, "error");
+        var placeholder = document.createElement("div");
+        placeholder.className = "qr-placeholder";
+        placeholder.innerHTML = "QR error:<br/><code class='small'>" + escapeHtml(text) + "</code>";
+        container.appendChild(placeholder);
+      }
+    }
+
+    // Utility
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

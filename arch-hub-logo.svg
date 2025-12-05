@@ -1,0 +1,173 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3F2A24"/>
+      <stop offset="100%" stop-color="#7C5234"/>
+    </linearGradient>
+
+    <!-- Node glow -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Connection shadow -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
+      <feOffset dx="0" dy="0" result="offset"/>
+      <feMerge>
+        <feMergeNode in="offset"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Amphora shape -->
+    <path id="pot-shape" d="         M360 260         C 360 240, 380 220, 420 210         L 460 200         C 470 195, 480 190, 480 182         L 480 170         L 544 170         L 544 182         C 544 190, 554 195, 564 200         L 604 210         C 644 220, 664 240, 664 260         C 664 300, 642 330, 628 350         C 612 370, 610 388, 620 412         C 650 470, 690 560, 708 640         C 724 710, 716 780, 684 832         C 638 900, 560 930, 512 940         C 464 930, 386 900, 340 832         C 308 780, 300 710, 316 640         C 334 560, 374 470, 404 412         C 414 388, 412 370, 396 350         C 382 330, 360 300, 360 260         Z"/>
+
+    <clipPath id="pot-clip">
+      <use xlink:href="#pot-shape"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="200" fill="url(#bg-grad)"/>
+
+  <!-- Subtle AI grid behind pot -->
+  <g stroke="#22C55E" stroke-width="3" opacity="0.16">
+    <!-- Vertical grid lines -->
+    <line x1="256" y1="128" x2="256" y2="896"/>
+    <line x1="384" y1="128" x2="384" y2="896"/>
+    <line x1="512" y1="128" x2="512" y2="896"/>
+    <line x1="640" y1="128" x2="640" y2="896"/>
+    <line x1="768" y1="128" x2="768" y2="896"/>
+    <!-- Horizontal grid lines -->
+    <line x1="192" y1="256" x2="832" y2="256"/>
+    <line x1="192" y1="384" x2="832" y2="384"/>
+    <line x1="192" y1="512" x2="832" y2="512"/>
+    <line x1="192" y1="640" x2="832" y2="640"/>
+    <line x1="192" y1="768" x2="832" y2="768"/>
+  </g>
+
+  <!-- Pot silhouette -->
+  <use xlink:href="#pot-shape" fill="#F5E3C7" stroke="#C8A47E" stroke-width="24"/>
+
+  <!-- Handles -->
+  <g fill="none" stroke="#C8A47E" stroke-width="20" stroke-linecap="round">
+    <path d="M360 320 C 320 360, 300 420, 320 470 C 340 520, 350 550, 360 560"/>
+    <path d="M664 320 C 704 360, 724 420, 704 470 C 684 520, 674 550, 664 560"/>
+  </g>
+
+  <!-- Stratigraphy layers + texture inside pot -->
+  <g clip-path="url(#pot-clip)">
+    <!-- Stratigraphy bands -->
+    <rect x="300" y="420" width="424" height="90" fill="#D9B28C" opacity="0.85"/>
+    <rect x="290" y="520" width="444" height="95" fill="#B98C63" opacity="0.9"/>
+    <rect x="280" y="620" width="464" height="110" fill="#8C5C3B" opacity="0.95"/>
+
+    <!-- Subtle clay texture -->
+    <g stroke="#A67950" stroke-width="6" opacity="0.18">
+      <path d="M360 360 C 380 540, 380 780, 360 900"/>
+      <path d="M430 360 C 450 580, 450 800, 430 900"/>
+      <path d="M500 360 C 520 580, 520 800, 500 900"/>
+      <path d="M570 360 C 590 580, 590 800, 570 900"/>
+      <path d="M640 360 C 660 580, 660 780, 640 880"/>
+
+      <path d="M340 600 L 460 680"/>
+      <path d="M420 700 L 560 780"/>
+      <path d="M520 640 L 660 720"/>
+    </g>
+  </g>
+
+  <!-- =============================== -->
+  <!-- NEURAL NETWORK (TOPMOST LAYER) -->
+  <!-- =============================== -->
+
+  <!-- Node coordinates -->
+  <!-- Left layer -->
+  <!-- L1: (300,340), L2: (300,540), L3: (300,740) -->
+  <!-- Middle layer -->
+  <!-- M1: (512,120), M2: (512,340), M3: (512,720), M4: (512,940) -->
+  <!-- Right layer -->
+  <!-- R1: (724,340), R2: (724,540), R3: (724,740) -->
+
+  <!-- Connections (thinned + reduced, 3 per left & right node) -->
+  <g stroke="#FFE600" stroke-width="4" filter="url(#shadow)" stroke-linecap="round">
+    <!-- LEFT → MIDDLE -->
+
+    <!-- Left Top (L1) to M1, M2, M3 -->
+    <line x1="300" y1="340" x2="512" y2="120"/>
+    <line x1="300" y1="340" x2="512" y2="340"/>
+    <line x1="300" y1="340" x2="512" y2="720"/>
+
+    <!-- Left Mid (L2) to M2, M3, M4 -->
+    <line x1="300" y1="540" x2="512" y2="340"/>
+    <line x1="300" y1="540" x2="512" y2="720"/>
+    <line x1="300" y1="540" x2="512" y2="940"/>
+
+    <!-- Left Bottom (L3) to M2, M3, M4 -->
+    <line x1="300" y1="740" x2="512" y2="340"/>
+    <line x1="300" y1="740" x2="512" y2="720"/>
+    <line x1="300" y1="740" x2="512" y2="940"/>
+
+    <!-- MIDDLE → RIGHT -->
+
+    <!-- Right Top (R1) gets from M1, M2, M3 -->
+    <line x1="512" y1="120" x2="724" y2="340"/>
+    <line x1="512" y1="340" x2="724" y2="340"/>
+    <line x1="512" y1="720" x2="724" y2="340"/>
+
+    <!-- Right Mid (R2) gets from M2, M3, M4 -->
+    <line x1="512" y1="340" x2="724" y2="540"/>
+    <line x1="512" y1="720" x2="724" y2="540"/>
+    <line x1="512" y1="940" x2="724" y2="540"/>
+
+    <!-- Right Bottom (R3) gets from M2, M3, M4 -->
+    <line x1="512" y1="340" x2="724" y2="740"/>
+    <line x1="512" y1="720" x2="724" y2="740"/>
+    <line x1="512" y1="940" x2="724" y2="740"/>
+  </g>
+
+  <!-- Glowing nodes (yellow) -->
+  <g filter="url(#glow)">
+    <!-- Left -->
+    <circle cx="300" cy="340" r="22" fill="#FFE600"/>
+    <circle cx="300" cy="540" r="22" fill="#FFE600"/>
+    <circle cx="300" cy="740" r="22" fill="#FFE600"/>
+
+    <!-- Middle -->
+    <circle cx="512" cy="120" r="22" fill="#FFE600"/>
+    <circle cx="512" cy="340" r="22" fill="#FFE600"/>
+    <circle cx="512" cy="720" r="22" fill="#FFE600"/>
+    <circle cx="512" cy="940" r="22" fill="#FFE600"/>
+
+    <!-- Right -->
+    <circle cx="724" cy="340" r="22" fill="#FFE600"/>
+    <circle cx="724" cy="540" r="22" fill="#FFE600"/>
+    <circle cx="724" cy="740" r="22" fill="#FFE600"/>
+  </g>
+
+  <!-- Node outlines on top -->
+  <g fill="none" stroke="#3A2A00" stroke-width="3">
+    <!-- Left -->
+    <circle cx="300" cy="340" r="22"/>
+    <circle cx="300" cy="540" r="22"/>
+    <circle cx="300" cy="740" r="22"/>
+
+    <!-- Middle -->
+    <circle cx="512" cy="120" r="22"/>
+    <circle cx="512" cy="340" r="22"/>
+    <circle cx="512" cy="720" r="22"/>
+    <circle cx="512" cy="940" r="22"/>
+
+    <!-- Right -->
+    <circle cx="724" cy="340" r="22"/>
+    <circle cx="724" cy="540" r="22"/>
+    <circle cx="724" cy="740" r="22"/>
+  </g>
+
+</svg>
