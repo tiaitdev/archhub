@@ -72,60 +72,6 @@
       pointer-events: none;
     }
 
-    /* Detail modal & backdrop */
-    .detail-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(2px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-      z-index: 900;
-    }
-
-    .detail-card-modal {
-      position: fixed;
-      left: 50%;
-      top: 110px; /* sits just under the app header */
-      transform: translate(-50%, 10px);
-      max-width: 800px;
-      width: min(92vw, 800px);
-      max-height: calc(100vh - 150px); /* leave space for header + bottom nav */
-      overflow-y: auto;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 901;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-
-    .detail-card-modal .card-header {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      background: #f5efe4; /* match card background so header stays solid while scrolling */
-    }
-
-    .detail-modal-visible .detail-backdrop {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .detail-modal-visible .detail-card-modal {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translate(-50%, 0);
-    }
-
-    @media (max-width: 700px) {
-      .detail-card-modal {
-        top: 90px;
-        width: 96vw;
-        max-height: calc(100vh - 140px);
-      }
-    }
-
-
     /* App container */
     .app-container {
       min-height: 100vh;
@@ -825,8 +771,7 @@
 
         <!-- DETAIL / FORM COLUMN -->
         <div class="column">
-          <div id="detail-backdrop" class="detail-backdrop"></div>
-          <div class="card detail-card-modal" id="detail-card">
+          <div class="card" id="detail-card" style="display:none;">
             <div class="card-header">
               <div>
                 <div class="card-title" id="detail-title">New Artifact</div>
@@ -1194,7 +1139,6 @@
         appRoot.classList.add("app-visible");
         captureLocation();
         loadFromStorage();
-        currentModule = "artifact";
         switchModule("artifact");
       }, 900);
     });
@@ -1252,29 +1196,62 @@
       strat:   { title: "Stratigraphy Profiles", listTitle: "Stored Stratigraphy Profiles", addLabel: "Add New Strat Profile" }
     };
 
-    function switchModule(module) {
+    function switchModule(module, opts) {
+      opts = opts || {};
       currentModule = module;
-      ["artifact","context","gpr","strat"].forEach(function(m) {
-        var btn = document.getElementById("nav-" + m);
-        if (btn) btn.classList.toggle("active", m === module);
-      });
+
+      // Sync bottom nav active state
+      var navButtons = document.querySelectorAll(".bottom-nav .nav-btn");
+      if (navButtons && navButtons.length) {
+        var map = { artifact: "artifacts", context: "context", gpr: "gpr", strat: "strat" };
+        var targetKey = map[module];
+        for (var i = 0; i < navButtons.length; i++) {
+          var btn = navButtons[i];
+          var key = btn.getAttribute("data-module");
+          btn.classList.toggle("active", key === targetKey);
+        }
+      }
+
       var meta = moduleMeta[module];
       document.getElementById("module-title").textContent = meta.title;
       document.getElementById("list-title").textContent = meta.listTitle;
       document.getElementById("add-button-label").textContent = meta.addLabel;
 
-      // Hide all forms when switching modules; user explicitly opens via "Add New"
-      ["artifact","context","gpr","strat"].forEach(function(m) {
-        var form = document.getElementById("form-" + m);
-        if (form) form.style.display = "none";
-      });
+      // Hide all forms by default; they'll be shown when user taps "Add New"
+      var forms = document.querySelectorAll(".module-form");
+      for (var j = 0; j < forms.length; j++) {
+        forms[j].style.display = "none";
+      }
 
-      // Ensure modal/detail is closed when switching modules
-      hideDetailCard();
+      // Unless explicitly kept, hide the detail card when switching modules
+      if (!opts.keepDetail) {
+        hideDetailCard();
+      }
 
-      document.getElementById("search-input").value = "";
+      // Reset search and refresh list for this module
+      var searchInput = document.getElementById("search-input");
+      if (searchInput) searchInput.value = "";
       renderCurrentModuleList("");
     }
+
+    // Wire bottom navigation buttons (icon over text)
+    window.addEventListener("DOMContentLoaded", function() {
+      var navButtons = document.querySelectorAll(".bottom-nav .nav-btn");
+      for (var i = 0; i < navButtons.length; i++) {
+        (function(btn) {
+          btn.addEventListener("click", function() {
+            var key = btn.getAttribute("data-module");
+            var module = null;
+            if (key === "artifacts") module = "artifact";
+            else if (key === "context") module = "context";
+            else if (key === "gpr") module = "gpr";
+            else if (key === "strat") module = "strat";
+            if (!module) return;
+            switchModule(module);
+          });
+        })(navButtons[i]);
+      }
+    });
 
     function onAddNewClicked() {
       showFormMode();
@@ -1285,8 +1262,9 @@
     }
 
     function showFormMode() {
-      var detailView = document.getElementById("detail-view");
-      if (detailView) detailView.style.display = "none";
+      var card = document.getElementById("detail-card");
+      if (card) card.style.display = "block";
+      document.getElementById("detail-view").style.display = "none";
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) {
         forms[i].style.display = (forms[i].id === "form-" + currentModule ? "block" : "none");
@@ -1294,23 +1272,14 @@
       var meta = moduleMeta[currentModule];
       document.getElementById("detail-title").textContent = "New " + meta.title.slice(0, -1);
       document.getElementById("detail-subtitle").textContent = "Use voice + AI, auto-context, and QR tagging.";
-      showDetailCard();
-    }
-
-    function showDetailCard() {
-      document.body.classList.add("detail-modal-visible");
     }
 
     function hideDetailCard() {
-      document.body.classList.remove("detail-modal-visible");
-      var detailView = document.getElementById("detail-view");
-      if (detailView) detailView.style.display = "none";
-      var forms = document.querySelectorAll(".module-form");
-      for (var i = 0; i < forms.length; i++) {
-        forms[i].style.display = "none";
-      }
+      var card = document.getElementById("detail-card");
+      if (card) card.style.display = "none";
+      var dv = document.getElementById("detail-view");
+      if (dv) dv.style.display = "none";
     }
-
 
     // Record storage
     var artifactRecords = [];
@@ -1945,10 +1914,11 @@
     function showArtifactDetail(id) {
       var rec = artifactRecords.find(function(r) { return r.id === id; });
       if (!rec) return;
-      currentModule = "artifact";
-      switchModule("artifact");
+      // Switch module but keep the detail card visible, then render detail view
+      switchModule("artifact", { keepDetail: true });
+      var card = document.getElementById("detail-card");
+      if (card) card.style.display = "block";
       buildArtifactDetail(rec);
-      showDetailCard();
     }
 
     function buildArtifactDetail(record) {
@@ -1958,7 +1928,6 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
-      showDetailCard();
 
       var userInputContext = record.userInputContext || {};
       var aiOutputStructured = record.aiOutputStructured || {};
@@ -2011,15 +1980,15 @@
     function showContextDetail(id) {
       var rec = contextRecords.find(function(r) { return r.id === id; });
       if (!rec) return;
-      currentModule = "context";
-      switchModule("context");
+      switchModule("context", { keepDetail: true });
+      var card = document.getElementById("detail-card");
+      if (card) card.style.display = "block";
       var detailView = document.getElementById("detail-view");
       document.getElementById("detail-title").textContent = "Context Sheet Detail";
       document.getElementById("detail-subtitle").textContent = "Context sheet with auto-context + QR.";
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
-      showDetailCard();
 
       var userInputContext = rec.userInputContext || {};
       var aiOutputStructured = rec.aiOutputStructured || {};
@@ -2063,8 +2032,9 @@
       var rec = gprRecords.find(function(r) { return r.id === id; });
       if (!rec) return;
 
-      currentModule = "gpr";
-      switchModule("gpr");
+      switchModule("gpr", { keepDetail: true });
+      var card = document.getElementById("detail-card");
+      if (card) card.style.display = "block";
 
       var detailView = document.getElementById("detail-view");
       document.getElementById("detail-title").textContent = "GPR Record Detail";
@@ -2072,7 +2042,6 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
-      showDetailCard();
 
       var userInputContext = rec.userInputContext || {};
       var aiOutputStructured = rec.aiOutputStructured || {};
@@ -2145,8 +2114,9 @@
       var rec = stratRecords.find(function(r) { return r.id === id; });
       if (!rec) return;
 
-      currentModule = "strat";
-      switchModule("strat");
+      switchModule("strat", { keepDetail: true });
+      var card = document.getElementById("detail-card");
+      if (card) card.style.display = "block";
 
       var detailView = document.getElementById("detail-view");
       document.getElementById("detail-title").textContent = "Stratigraphy Profile Detail";
@@ -2154,7 +2124,6 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
-      showDetailCard();
 
       var userInputContext = rec.userInputContext || {};
       var aiOutputStructured = rec.aiOutputStructured || {};
