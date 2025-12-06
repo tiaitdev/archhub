@@ -72,6 +72,60 @@
       pointer-events: none;
     }
 
+    /* Detail modal & backdrop */
+    .detail-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 900;
+    }
+
+    .detail-card-modal {
+      position: fixed;
+      left: 50%;
+      top: 110px; /* sits just under the app header */
+      transform: translate(-50%, 10px);
+      max-width: 800px;
+      width: min(92vw, 800px);
+      max-height: calc(100vh - 150px); /* leave space for header + bottom nav */
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 901;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .detail-card-modal .card-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f5efe4; /* match card background so header stays solid while scrolling */
+    }
+
+    .detail-modal-visible .detail-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .detail-modal-visible .detail-card-modal {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 700px) {
+      .detail-card-modal {
+        top: 90px;
+        width: 96vw;
+        max-height: calc(100vh - 140px);
+      }
+    }
+
+
     /* App container */
     .app-container {
       min-height: 100vh;
@@ -626,6 +680,31 @@
     cursor: pointer;
   }
 
+  .nav-btn {
+    display: flex;
+    flex-direction: column;      /* stack icon over text */
+    align-items: center;
+    justify-content: center;
+    gap: 2px;                    /* small space between icon and label */
+    padding: 6px 4px;            /* slightly tighter padding for stacked layout */
+    font-size: 0.8rem;           /* base font for label */
+  }
+
+  .nav-btn.active {
+    border-top: 3px solid #4A3F31;
+    font-weight: 600;
+  }
+
+  .nav-icon {
+    font-size: 1.2rem;           /* icon a bit larger */
+    line-height: 1;
+  }
+
+  .nav-label {
+    font-size: 0.75rem;
+    line-height: 1.1;
+  }
+
 
   /* Overlay viewer for GPR & Stratigraphy */
   .overlay-viewer {
@@ -746,10 +825,14 @@
 
         <!-- DETAIL / FORM COLUMN -->
         <div class="column">
-          <div class="card" id="detail-card">
+          <div id="detail-backdrop" class="detail-backdrop"></div>
+          <div class="card detail-card-modal" id="detail-card">
             <div class="card-header">
-              <div class="card-title" id="detail-title">New Artifact</div>
-              <div class="small muted" id="detail-subtitle">Use voice + AI to fill the context sheet.</div>
+              <div>
+                <div class="card-title" id="detail-title">New Artifact</div>
+                <div class="small muted" id="detail-subtitle">Use voice + AI to fill the context sheet.</div>
+              </div>
+              <button type="button" class="secondary" onclick="hideDetailCard()">← Back</button>
             </div>
 
             <!-- Forms for each module -->
@@ -999,11 +1082,33 @@
   </div>
 
   <!-- Bottom navigation -->
-  <div class="bottom-nav">
+  <!-- <div class="bottom-nav">
     <button id="nav-artifact" class="active" onclick="switchModule('artifact')">🗂 Artifacts</button>
     <button id="nav-context" onclick="switchModule('context')">📄 Context Sheets</button>
     <button id="nav-gpr" onclick="switchModule('gpr')">📡 GPR</button>
     <button id="nav-strat" onclick="switchModule('strat')">🧱 Stratigraphy</button>
+  </div> -->
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-module="artifacts">
+      <span class="nav-icon">🏺</span>
+      <span class="nav-label">Artifacts</span>
+    </button>
+    
+    <button class="nav-btn" data-module="context">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">Context</span>
+    </button>
+    
+    <button class="nav-btn" data-module="gpr">
+      <span class="nav-icon">📡</span>
+      <span class="nav-label">GPR</span>
+    </button>
+    
+    <button class="nav-btn" data-module="strat">
+      <span class="nav-icon">🧱</span>
+      <span class="nav-label">Strat</span>
+    </button>
   </div>
 
     <!-- Failsafe: always hide splash and show app even if main JS errors -->
@@ -1089,7 +1194,8 @@
         appRoot.classList.add("app-visible");
         captureLocation();
         loadFromStorage();
-        renderCurrentModuleList("");
+        currentModule = "artifact";
+        switchModule("artifact");
       }, 900);
     });
 
@@ -1157,12 +1263,15 @@
       document.getElementById("list-title").textContent = meta.listTitle;
       document.getElementById("add-button-label").textContent = meta.addLabel;
 
+      // Hide all forms when switching modules; user explicitly opens via "Add New"
       ["artifact","context","gpr","strat"].forEach(function(m) {
         var form = document.getElementById("form-" + m);
-        if (form) form.style.display = (m === module ? "block" : "none");
+        if (form) form.style.display = "none";
       });
 
-      showFormMode();
+      // Ensure modal/detail is closed when switching modules
+      hideDetailCard();
+
       document.getElementById("search-input").value = "";
       renderCurrentModuleList("");
     }
@@ -1176,7 +1285,8 @@
     }
 
     function showFormMode() {
-      document.getElementById("detail-view").style.display = "none";
+      var detailView = document.getElementById("detail-view");
+      if (detailView) detailView.style.display = "none";
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) {
         forms[i].style.display = (forms[i].id === "form-" + currentModule ? "block" : "none");
@@ -1184,7 +1294,23 @@
       var meta = moduleMeta[currentModule];
       document.getElementById("detail-title").textContent = "New " + meta.title.slice(0, -1);
       document.getElementById("detail-subtitle").textContent = "Use voice + AI, auto-context, and QR tagging.";
+      showDetailCard();
     }
+
+    function showDetailCard() {
+      document.body.classList.add("detail-modal-visible");
+    }
+
+    function hideDetailCard() {
+      document.body.classList.remove("detail-modal-visible");
+      var detailView = document.getElementById("detail-view");
+      if (detailView) detailView.style.display = "none";
+      var forms = document.querySelectorAll(".module-form");
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].style.display = "none";
+      }
+    }
+
 
     // Record storage
     var artifactRecords = [];
@@ -1822,6 +1948,7 @@
       currentModule = "artifact";
       switchModule("artifact");
       buildArtifactDetail(rec);
+      showDetailCard();
     }
 
     function buildArtifactDetail(record) {
@@ -1831,6 +1958,7 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
+      showDetailCard();
 
       var userInputContext = record.userInputContext || {};
       var aiOutputStructured = record.aiOutputStructured || {};
@@ -1891,6 +2019,7 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
+      showDetailCard();
 
       var userInputContext = rec.userInputContext || {};
       var aiOutputStructured = rec.aiOutputStructured || {};
@@ -1943,6 +2072,7 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
+      showDetailCard();
 
       var userInputContext = rec.userInputContext || {};
       var aiOutputStructured = rec.aiOutputStructured || {};
@@ -2024,6 +2154,7 @@
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
+      showDetailCard();
 
       var userInputContext = rec.userInputContext || {};
       var aiOutputStructured = rec.aiOutputStructured || {};
