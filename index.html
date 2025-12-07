@@ -1623,10 +1623,8 @@ function showDetailCard() {
       document.getElementById("field-site").value = "";
       document.getElementById("field-notes").value = "";
       document.getElementById("tag-suggestions").textContent = "";
-      if (artifactPhotoUrl) {
-        URL.revokeObjectURL(artifactPhotoUrl);
-        artifactPhotoUrl = null;
-      }
+      // Clear in-memory photo data and preview (no object URL used here)
+      artifactPhotoDataUrl = null;
       photoPreview.src = "";
     }
 
