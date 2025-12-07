@@ -2018,7 +2018,7 @@ function showDetailCard() {
     function buildArtifactDetail(record) {
       var detailView = document.getElementById("detail-view");
       document.getElementById("detail-title").textContent = "Artifact Detail";
-      document.getElementById("detail-subtitle").textContent = "Human input + AI-structured fields + auto-context + QR.";
+      document.getElementById("detail-subtitle").textContent = "Expert input + AI-structured fields + auto-context + QR.";
       var forms = document.querySelectorAll(".module-form");
       for (var i = 0; i < forms.length; i++) forms[i].style.display = "none";
       detailView.style.display = "block";
@@ -2051,7 +2051,7 @@ function showDetailCard() {
       html += "<p class='info-text small'>record_type = &quot;artifact&quot; • user_input_context • ai_output_structured • auto_context • QR payload</p>";
       html += "<div class='info-text small'><strong>Record ID:</strong> <span class='id-highlight'>" + record.id + "</span><br/>";
       html += "<strong>Created:</strong> " + (createdAt ? new Date(createdAt).toLocaleString() : "") + "</div><hr/>";
-      html += "<h4>Human Input</h4>";
+      html += "<h4>Expert Input</h4>";
       html += photoHtml;
       html += "<p class='small' style='margin-top:6px;'><strong>Observation:</strong><br/>" + (textNotes ? escapeHtml(textNotes) : "<span class='muted'>No observation text</span>") + "</p>";
       html += "<p class='small'><strong>Manual notes:</strong><br/>" + (manualFields.notes ? escapeHtml(manualFields.notes) : "<span class='muted'>No extra notes</span>") + "</p>";
