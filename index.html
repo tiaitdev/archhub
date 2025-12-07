@@ -1293,11 +1293,11 @@ function showNotification(message, type) {
     }
 
     function onAddNewClicked() {
-      showFormMode();
       if (currentModule === "artifact") resetArtifactForm();
       if (currentModule === "context") resetContextForm();
       if (currentModule === "gpr") resetGprForm();
       if (currentModule === "strat") resetStratForm();
+      showFormMode();
     }
 
     
