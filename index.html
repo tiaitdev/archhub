@@ -1790,10 +1790,7 @@ function showDetailCard() {
       document.getElementById("gpr-anomaly").value = "";
       document.getElementById("gpr-notes").value = "";
       document.getElementById("gpr-confidence").value = "";
-      if (gprImageUrl) {
-        URL.revokeObjectURL(gprImageUrl);
-        gprImageUrl = null;
-      }
+      gprImageUrl = null;
       gprPreview.src = "";
     }
 
@@ -1881,10 +1878,7 @@ function showDetailCard() {
       document.getElementById("strat-layers").value = "";
       document.getElementById("strat-key").value = "";
       document.getElementById("strat-summary").value = "";
-      if (stratPhotoUrl) {
-        URL.revokeObjectURL(stratPhotoUrl);
-        stratPhotoUrl = null;
-      }
+      stratPhotoUrl = null;
       stratPreview.src = "";
     }
 
