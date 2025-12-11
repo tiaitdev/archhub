@@ -748,6 +748,73 @@
   .overlay-toolbar label {
     font-size: 0.8rem;
   }
+
+  /* QR Scanner Modal */
+  .qr-scanner-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .qr-scanner-modal.active {
+    display: flex;
+  }
+
+  .qr-scanner-container {
+    background: #F5EFE4;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .qr-scanner-video {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    background: #000;
+    border: 3px solid #4A3F31;
+  }
+
+  .qr-scanner-instructions {
+    color: #2B231B;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 0 16px;
+  }
+
+  .qr-scanner-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .qr-scanner-status {
+    color: #4A3F31;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 20px;
+  }
+
+  .qr-scanner-status.scanning {
+    color: #5A8A4A;
+  }
+
+  .qr-scanner-status.error {
+    color: #B7523A;
+  }
 </style>
 
 </head>
@@ -789,6 +856,9 @@
           />
         </div>
         <div class="header-right">
+          <button type="button" class="secondary" onclick="startQRScan()">
+            📷 Scan QR
+          </button>
           <button type="button" class="secondary" onclick="exportAllData()">
             ⬇ Export
           </button>
@@ -826,6 +896,21 @@
         <!-- DETAIL / FORM COLUMN -->
         <div class="column">
           <div id="detail-backdrop" class="detail-backdrop"></div>
+          
+          <!-- QR Scanner Modal -->
+          <div id="qr-scanner-modal" class="qr-scanner-modal">
+            <div class="qr-scanner-container">
+              <h3 style="margin: 0; color: #2B231B;">Scan QR Code</h3>
+              <video id="qr-scanner-video" class="qr-scanner-video" autoplay playsinline></video>
+              <canvas id="qr-scanner-canvas" style="display: none;"></canvas>
+              <div id="qr-scanner-status" class="qr-scanner-status scanning">Point camera at QR code...</div>
+              <p class="qr-scanner-instructions">Position the QR code within the frame. The record will be found automatically.</p>
+              <div class="qr-scanner-buttons">
+                <button type="button" class="secondary" onclick="stopQRScan()">✕ Close</button>
+              </div>
+            </div>
+          </div>
+
           <div class="card detail-card-modal" id="detail-card">
             <div class="card-header">
               <div>
@@ -957,7 +1042,7 @@
                 </button>
               </div>
 
-              <div style="margin-top: 6px%;">
+              <div style="margin-top: 6px;">
                 <label for="ctx-summary">Summary (ai_output_structured.summary)</label>
                 <textarea id="ctx-summary" placeholder="Short summary of this context"></textarea>
               </div>
@@ -1186,6 +1271,8 @@ function showNotification(message, type) {
 
 <!-- QRCode library placeholder (replace with real qrcode.min.js for scannable codes) -->
   <script src="qrcode.min.js"></script>
+  <!-- jsQR library for QR code scanning -->
+  <script src="jsQR.min.js"></script>
 
   <script>
     // Splash + initialization
@@ -2343,6 +2430,245 @@ function showDetailCard() {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+
+    // QR Scanner functionality
+    var qrScannerStream = null;
+    var qrScannerAnimationFrame = null;
+
+    function startQRScan() {
+      var modal = document.getElementById("qr-scanner-modal");
+      var video = document.getElementById("qr-scanner-video");
+      var canvas = document.getElementById("qr-scanner-canvas");
+      var status = document.getElementById("qr-scanner-status");
+
+      if (!modal || !video || !canvas) {
+        showNotification("QR scanner elements not found.", "error");
+        return;
+      }
+
+      // Check if jsQR is available
+      if (typeof jsQR === "undefined") {
+        showNotification("QR scanning library (jsQR) not loaded. Please ensure jsQR.min.js is in the folder.", "error");
+        return;
+      }
+
+      modal.classList.add("active");
+      status.textContent = "Requesting camera access...";
+      status.className = "qr-scanner-status";
+
+      // Request camera access
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: "environment" // Use back camera on mobile
+        } 
+      })
+      .then(function(stream) {
+        qrScannerStream = stream;
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        status.textContent = "Point camera at QR code...";
+        status.className = "qr-scanner-status scanning";
+
+        // Start scanning loop
+        video.addEventListener("loadedmetadata", function() {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          scanQRCode();
+        });
+      })
+      .catch(function(err) {
+        console.error("Camera error:", err);
+        var errorMsg = "Camera access denied or unavailable.";
+        if (err.name === "NotAllowedError") {
+          errorMsg = "Camera permission denied. Please allow camera access.";
+        } else if (err.name === "NotFoundError") {
+          errorMsg = "No camera found on this device.";
+        } else if (err.name === "NotReadableError") {
+          errorMsg = "Camera is already in use by another application.";
+        }
+        status.textContent = errorMsg;
+        status.className = "qr-scanner-status error";
+        showNotification(errorMsg, "error");
+      });
+    }
+
+    function scanQRCode() {
+      var video = document.getElementById("qr-scanner-video");
+      var canvas = document.getElementById("qr-scanner-canvas");
+      var context = canvas.getContext("2d");
+      var status = document.getElementById("qr-scanner-status");
+
+      if (!video || !canvas || !context) return;
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+
+        if (code) {
+          // QR code found!
+          status.textContent = "QR code detected!";
+          status.className = "qr-scanner-status scanning";
+          stopQRScan();
+          handleScannedQR(code.data);
+        } else {
+          // Continue scanning
+          qrScannerAnimationFrame = requestAnimationFrame(scanQRCode);
+        }
+      } else {
+        qrScannerAnimationFrame = requestAnimationFrame(scanQRCode);
+      }
+    }
+
+    function stopQRScan() {
+      var modal = document.getElementById("qr-scanner-modal");
+      var video = document.getElementById("qr-scanner-video");
+      var status = document.getElementById("qr-scanner-status");
+
+      // Stop camera stream
+      if (qrScannerStream) {
+        qrScannerStream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+        qrScannerStream = null;
+      }
+
+      // Stop animation frame
+      if (qrScannerAnimationFrame) {
+        cancelAnimationFrame(qrScannerAnimationFrame);
+        qrScannerAnimationFrame = null;
+      }
+
+      // Clear video
+      if (video) {
+        video.srcObject = null;
+      }
+
+      // Hide modal
+      if (modal) {
+        modal.classList.remove("active");
+      }
+
+      if (status) {
+        status.textContent = "";
+        status.className = "qr-scanner-status";
+      }
+    }
+
+    function parseQRPayload(qrText) {
+      // Parse format: ARCHHUB:ART:A-1764917542040, ARCHHUB:CTX:..., etc.
+      if (!qrText || typeof qrText !== "string") {
+        return null;
+      }
+
+      var parts = qrText.split(":");
+      if (parts.length !== 3 || parts[0] !== "ARCHHUB") {
+        return null;
+      }
+
+      var typePrefix = parts[1].toUpperCase();
+      var recordId = parts[2];
+
+      // Map prefixes to module names
+      var moduleMap = {
+        "ART": "artifact",
+        "CTX": "context",
+        "GPR": "gpr",
+        "STR": "strat"
+      };
+
+      var moduleType = moduleMap[typePrefix];
+      if (!moduleType) {
+        return null;
+      }
+
+      return {
+        moduleType: moduleType,
+        recordId: recordId,
+        originalText: qrText
+      };
+    }
+
+    function findRecordByQR(qrPayload) {
+      var parsed = parseQRPayload(qrPayload);
+      if (!parsed) {
+        return null;
+      }
+
+      var records;
+      if (parsed.moduleType === "artifact") {
+        records = artifactRecords;
+      } else if (parsed.moduleType === "context") {
+        records = contextRecords;
+      } else if (parsed.moduleType === "gpr") {
+        records = gprRecords;
+      } else if (parsed.moduleType === "strat") {
+        records = stratRecords;
+      } else {
+        return null;
+      }
+
+      // Find record by ID
+      var record = records.find(function(r) {
+        return r.id === parsed.recordId;
+      });
+
+      if (record) {
+        return {
+          record: record,
+          moduleType: parsed.moduleType
+        };
+      }
+
+      return null;
+    }
+
+    function navigateToRecord(record, moduleType) {
+      if (!record || !moduleType) {
+        showNotification("Record not found.", "error");
+        return;
+      }
+
+      // Switch to appropriate module
+      switchModule(moduleType);
+
+      // Show detail view based on module type
+      if (moduleType === "artifact") {
+        showArtifactDetail(record.id);
+      } else if (moduleType === "context") {
+        showContextDetail(record.id);
+      } else if (moduleType === "gpr") {
+        showGprDetail(record.id);
+      } else if (moduleType === "strat") {
+        showStratDetail(record.id);
+      }
+
+      showNotification("Record found and displayed!", "success");
+    }
+
+    function handleScannedQR(qrText) {
+      if (!qrText) {
+        showNotification("No QR code data found.", "error");
+        return;
+      }
+
+      var result = findRecordByQR(qrText);
+      if (result) {
+        navigateToRecord(result.record, result.moduleType);
+      } else {
+        // Check if it's a valid ARCHHUB format but record not found
+        var parsed = parseQRPayload(qrText);
+        if (parsed) {
+          showNotification("QR code recognized but record not found: " + parsed.recordId, "error");
+        } else {
+          showNotification("Invalid QR code format. Expected ARCHHUB:TYPE:ID", "error");
+        }
+      }
+    }
   
     // Wire bottom navigation (icon + label) to modules
     window.addEventListener("DOMContentLoaded", function() {
@@ -2360,6 +2686,16 @@ function showDetailCard() {
             switchModule(module);
           });
         })(navButtons[i]);
+      }
+
+      // Close QR scanner when clicking outside the container
+      var qrModal = document.getElementById("qr-scanner-modal");
+      if (qrModal) {
+        qrModal.addEventListener("click", function(e) {
+          if (e.target === qrModal) {
+            stopQRScan();
+          }
+        });
       }
     });
 
