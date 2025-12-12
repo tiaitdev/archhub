@@ -102,8 +102,26 @@
     .detail-card-modal .card-header {
       position: sticky;
       top: 0;
-      z-index: 1;
-      background: #f5efe4; /* match card background so header stays solid while scrolling */
+      z-index: 10;
+      background: #4A3F31; /* dark background to hide scrolling text */
+      color: #FDF8ED;
+      padding: 12px;
+      margin: -12px -12px 12px -12px; /* extend to cover card padding */
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .detail-card-modal .card-header .card-title {
+      color: #FDF8ED;
+    }
+
+    .detail-card-modal .card-header .small.muted {
+      color: #D9C9A7;
+    }
+
+    .detail-card-modal .card-header button {
+      background: #E5D7BE;
+      color: #4A3F31;
     }
 
     .detail-modal-visible .detail-backdrop {
@@ -148,6 +166,7 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 8px;
+      background: linear-gradient(#402B24 ,#7B5134)
     }
 
     .app-title-main {
@@ -252,7 +271,7 @@
     .card {
       background: #fff;
       border-radius: 12px;
-      padding: 12px;
+      padding: 0px 12px;
       margin-bottom: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
@@ -429,7 +448,7 @@
         margin: 0 auto;
         left: 50%;
         transform: translateX(-50%);
-        border-radius: 999px 999px 0 0;
+        border-radius: 8px 8px 0 0;
       }
     }
 
@@ -463,7 +482,7 @@
   }
 
   .app-title-main {
-    color: #2B231B;
+    color: #F5E3C7;
     font-size: 1.25rem;
   }
 
@@ -923,11 +942,11 @@
             <!-- Forms for each module -->
             <div id="form-artifact" class="module-form">
               <p class="info-text">
-                Step 1 – Add photo, then describe the find in your own words.
-                ARCH-HUB uses that as <strong>user_input_context</strong> and captures
+                ARCH-HUB uses your input as <strong>user_input_context</strong> and captures
                 <strong>time, timezone, and GPS</strong> automatically when available.
               </p>
 
+              <p class="info-text"><strong>Step 2 – Image Upload (Optional)</strong></p>
               <div class="info-text small"><strong>Photo</strong></div>
               <div class="row-inline" style="margin-bottom: 6px;">
                 <label>
@@ -945,8 +964,9 @@
               </div>
               <img id="photo-preview" class="photo-preview" alt="Artifact preview will appear here" />
 
-              <div style="margin-top: 10px;">
-                <label for="spoken-notes">Spoken / typed observation</label>
+              <p class="info-text" style="margin-top: 10px;"><strong>Step 3 – Spoken / Typed Observation</strong></p>
+              <div style="margin-top: 6px;">
+                <label for="spoken-notes">Describe the find in your own words</label>
                 <textarea id="spoken-notes" placeholder="Pottery fragment found in grid A4 at depth 20 cm near fire pit."></textarea>
                 <p class="info-text small">
                   On iPhone/iPad, tap inside this box and use the keyboard <b>mic</b> to dictate.
@@ -957,7 +977,7 @@
               </div>
 
               <hr />
-              <p class="info-text">Step 2 – Review the AI-suggested structure and edit if needed.</p>
+              <p class="info-text">Step 4 – Review the AI-suggested structure and edit if needed.</p>
 
               <div class="row-inline">
                 <div class="grow">
@@ -1009,6 +1029,39 @@
                 Voice + AI can help fill the structure, auto-context logs time & GPS.
               </p>
 
+              <p class="info-text"><strong>Step 2 – Image Upload (Optional)</strong></p>
+              <div class="info-text small"><strong>Context Photo</strong></div>
+              <div class="row-inline" style="margin-bottom: 6px;">
+                <label>
+                  <input id="ctx-photo-camera" type="file" accept="image/*" capture="environment" style="display:none" />
+                  <button type="button" class="secondary" onclick="document.getElementById('ctx-photo-camera').click()">
+                    📷 Use Camera
+                  </button>
+                </label>
+                <label>
+                  <input id="ctx-photo-album" type="file" accept="image/*" style="display:none" />
+                  <button type="button" class="secondary" onclick="document.getElementById('ctx-photo-album').click()">
+                    🖼️ From Album
+                  </button>
+                </label>
+              </div>
+              <img id="ctx-photo-preview" class="photo-preview" alt="Context photo preview will appear here" />
+
+              <p class="info-text" style="margin-top: 10px;"><strong>Step 3 – Spoken / Typed Observation</strong></p>
+              <div style="margin-top: 6px;">
+                <label for="ctx-notes">Describe the context in your own words</label>
+                <textarea id="ctx-notes" placeholder="Stone wall feature in layer 3, trench B, running north-south..."></textarea>
+                <p class="info-text small">
+                  On iPhone/iPad, tap inside this box and use the keyboard <b>mic</b> to dictate.
+                </p>
+                <button type="button" onclick="extractFieldsFromObservationContext()">
+                  ✨ Use AI logic to suggest fields
+                </button>
+              </div>
+
+              <hr />
+              <p class="info-text">Step 4 – Review the AI-suggested structure and edit if needed.</p>
+
               <div style="margin-top: 6px;">
                 <label for="ctx-site">Site name</label>
                 <input id="ctx-site" type="text" placeholder="Site name" />
@@ -1034,14 +1087,6 @@
                 <input id="ctx-feature" type="text" placeholder="Wall, hearth, pit, post-hole..." />
               </div>
 
-              <div style="margin-top: 10px;">
-                <label for="ctx-notes">Spoken / typed description</label>
-                <textarea id="ctx-notes" placeholder="Stone wall feature in layer 3, trench B, running north-south..."></textarea>
-                <button type="button" onclick="extractFieldsFromObservationContext()">
-                  ✨ Use AI logic to suggest fields
-                </button>
-              </div>
-
               <div style="margin-top: 6px;">
                 <label for="ctx-summary">Summary (ai_output_structured.summary)</label>
                 <textarea id="ctx-summary" placeholder="Short summary of this context"></textarea>
@@ -1063,6 +1108,7 @@
                 Auto-context captures when & where this interpretation was logged.
               </p>
 
+              <p class="info-text"><strong>Step 2 – Image Upload (Optional)</strong></p>
               <div class="info-text small"><strong>GPR Image</strong></div>
               <div class="row-inline" style="margin-bottom: 6px;">
                 <label>
@@ -1073,6 +1119,21 @@
                 </label>
               </div>
               <img id="gpr-preview" class="photo-preview" alt="GPR preview will appear here" />
+
+              <p class="info-text" style="margin-top: 10px;"><strong>Step 3 – Spoken / Typed Observation</strong></p>
+              <div style="margin-top: 6px;">
+                <label for="gpr-notes">Describe the GPR interpretation in your own words</label>
+                <textarea id="gpr-notes" placeholder="Possible wall reflection running east-west at depth 40-80 cm, profile 12..."></textarea>
+                <p class="info-text small">
+                  On iPhone/iPad, tap inside this box and use the keyboard <b>mic</b> to dictate.
+                </p>
+                <button type="button" onclick="extractFieldsFromObservationGpr()">
+                  ✨ Use AI logic to suggest fields
+                </button>
+              </div>
+
+              <hr />
+              <p class="info-text">Step 4 – Review the AI-suggested structure and edit if needed.</p>
 
               <div style="margin-top: 6px;">
                 <label for="gpr-area">Area / profile ID</label>
@@ -1088,11 +1149,6 @@
                   <label for="gpr-anomaly">Anomaly type</label>
                   <input id="gpr-anomaly" type="text" placeholder="Void, wall, possible feature..." />
                 </div>
-              </div>
-
-              <div style="margin-top: 6px;">
-                <label for="gpr-notes">Interpretation notes</label>
-                <textarea id="gpr-notes" placeholder="Possible wall reflection running east-west..."></textarea>
               </div>
 
               <div style="margin-top: 6px;">
@@ -1116,7 +1172,8 @@
                 Auto-context logs when & where this profile was recorded.
               </p>
 
-              <div class="info-text small"><strong>Profile Photo (optional)</strong></div>
+              <p class="info-text"><strong>Step 2 – Image Upload (Optional)</strong></p>
+              <div class="info-text small"><strong>Profile Photo</strong></div>
               <div class="row-inline" style="margin-bottom: 6px;">
                 <label>
                   <input id="strat-photo-input" type="file" accept="image/*" style="display:none" />
@@ -1126,6 +1183,21 @@
                 </label>
               </div>
               <img id="strat-preview" class="photo-preview" alt="Stratigraphy preview will appear here" />
+
+              <p class="info-text" style="margin-top: 10px;"><strong>Step 3 – Spoken / Typed Observation</strong></p>
+              <div style="margin-top: 6px;">
+                <label for="strat-notes">Describe the stratigraphy profile in your own words</label>
+                <textarea id="strat-notes" placeholder="Trench C, north wall, 6 distinct layers from topsoil down, layer 3 contains ash, layer 5 is clay..."></textarea>
+                <p class="info-text small">
+                  On iPhone/iPad, tap inside this box and use the keyboard <b>mic</b> to dictate.
+                </p>
+                <button type="button" onclick="extractFieldsFromObservationStrat()">
+                  ✨ Use AI logic to suggest fields
+                </button>
+              </div>
+
+              <hr />
+              <p class="info-text">Step 4 – Review the AI-suggested structure and edit if needed.</p>
 
               <div style="margin-top: 6px;">
                 <label for="strat-site">Site / trench</label>
@@ -1428,16 +1500,17 @@ function showNotification(message, type) {
           }
         }
 
-        prefillIfEmpty(ctxSite);
-        prefillIfEmpty(ctxTrench);
-        prefillIfEmpty(ctxLayer);
-        prefillIfEmpty(ctxGrid);
-        prefillIfEmpty(ctxFeature);
+        //prefillIfEmpty(ctxSite);
+        // prefillIfEmpty(ctxTrench);
+        // prefillIfEmpty(ctxLayer);
+        // prefillIfEmpty(ctxGrid);
+        // prefillIfEmpty(ctxFeature);
         prefillIfEmpty(ctxNotes);
         // Do NOT touch ctx-summary – it should start empty so AI can fill it.
       } else if (currentModule === "gpr") {
         // Prefill all GPR fields from placeholders for quick demo.
-        ["gpr-area", "gpr-depth", "gpr-anomaly", "gpr-notes", "gpr-confidence"].forEach(function (id) {
+        //["gpr-area", "gpr-depth", "gpr-anomaly", "gpr-notes", "gpr-confidence"]
+        ["gpr-notes"].forEach(function (id) {
           var el = document.getElementById(id);
           if (el && !el.value && el.placeholder) {
             el.value = el.placeholder;
@@ -1445,7 +1518,8 @@ function showNotification(message, type) {
         });
       } else if (currentModule === "strat") {
         // Prefill all Stratigraphy fields from placeholders for quick demo.
-        ["strat-site", "strat-layers", "strat-key", "strat-summary"].forEach(function (id) {
+        //["strat-notes","strat-site", "strat-layers", "strat-key", "strat-summary"]
+        ["strat-notes"].forEach(function (id) {
           var el = document.getElementById(id);
           if (el && !el.value && el.placeholder) {
             el.value = el.placeholder;
@@ -1741,6 +1815,117 @@ function showDetailCard() {
       }
     }
 
+        // GPR MODULE - AI extraction
+
+    function extractFieldsFromObservationGpr() {
+      var textRaw = document.getElementById("gpr-notes").value || "";
+      var text = textRaw.toLowerCase();
+
+      var areaInput = document.getElementById("gpr-area");
+      var depthInput = document.getElementById("gpr-depth");
+      var anomalyInput = document.getElementById("gpr-anomaly");
+      var confidenceInput = document.getElementById("gpr-confidence");
+
+      // -------------------------
+      // AREA extraction
+      // -------------------------
+      // Matches: "courtyard wall", "profile 3 wall", "well wall", "backyard wall"
+      var areaMatch = text.match(/((courtyard|profile\s*\d+|well|backyard)(\s+wall)?)/);
+
+      if (areaMatch) {
+        areaInput.value = areaMatch[1];
+      }
+
+      // -------------------------
+      // DEPTH extraction
+      // -------------------------
+      // First number followed by "cm"
+      var depthMatch = text.match(/(\d+)?(\s*-\s*)?(\d+)\s*cm/);
+      if (depthMatch) {
+        depthInput.value = depthMatch[0];
+      }
+
+      // -------------------------
+      // ANOMALY extraction
+      // -------------------------
+      // Look for known anomaly keywords
+      var anomalyMatch = text.match(
+        /\b(void|cavity|pit|trench|foundation|stone|metal|pipe|anomaly|wall\s*(reflection)?)\b/
+      );
+      if (anomalyMatch) {
+        anomalyInput.value = anomalyMatch[1];
+      }
+
+      // -------------------------
+      // CONFIDENCE extraction
+      // -------------------------
+      // Patterns supported:
+      //   "80% confidence"
+      //   "confidence 80%"
+      //   "confidence: 80"
+      //   "high confidence"
+      //   "medium confidence"
+      //   "low confidence"
+
+      // % numeric form
+      var confNum = text.match(/(\d+)\s*%/);
+      if (confNum) {
+        confidenceInput.value = confNum[1] + "%";
+      } else {
+        // textual confidence
+        var confText = text.match(/\b(high|medium|low)\s+confidence\b/);
+        if (confText) {
+          confidenceInput.value = confText[1];
+        } else {
+          confidenceInput.value = "low";
+        }
+      }
+    }
+
+    // STRAT MODULE - AI extraction
+    function extractFieldsFromObservationStrat() {
+      var textRaw = document.getElementById("strat-notes").value || "";
+      var text = textRaw.toLowerCase();
+
+      var siteInput = document.getElementById("strat-site");
+      var layersInput = document.getElementById("strat-layers");
+      var keyInput = document.getElementById("strat-key");
+      var summaryInput = document.getElementById("strat-summary");
+
+      // Extract site/trench
+      var trenchMatch = text.match(/trench\s+([a-z0-9]+)/i);
+      if (trenchMatch) {
+        var trench = trenchMatch[1].toUpperCase();
+        var wallMatch = text.match(/(north|south|east|west)\s+wall/);
+        if (wallMatch) siteInput.value = "Trench " + trench + ", " + wallMatch[1] + " wall";
+        else siteInput.value = "Trench " + trench;
+      }
+
+      // Extract layer count
+      var layerCountMatch = text.match(/(\d+)\s*(distinct\s+)?layers?/);
+      if (layerCountMatch) layersInput.value = layerCountMatch[1];
+
+      // Extract key layers
+      var keyLayers = [];
+      if (text.indexOf("ash") !== -1) keyLayers.push("ash");
+      if (text.indexOf("clay") !== -1) keyLayers.push("clay");
+      if (text.indexOf("soil") !== -1) keyLayers.push("soil");
+      if (text.indexOf("stone") !== -1) keyLayers.push("stone");
+      var layerNumMatch = text.match(/layer\s+(\d+)\s+([a-z]+)/);
+      if (layerNumMatch && keyLayers.length === 0) {
+        keyInput.value = "Layer " + layerNumMatch[1] + " " + layerNumMatch[2];
+      } else if (keyLayers.length > 0) {
+        keyInput.value = keyLayers.join(", ");
+      }
+
+      // Generate summary
+      if (!summaryInput.value && textRaw.trim()) {
+        summaryInput.value = textRaw.trim().slice(0, 300);
+      }
+
+      showNotification("Stratigraphy fields extracted from observation.", "success");
+    }
+
     function saveContextSheet() {
       var siteName = (document.getElementById("ctx-site").value || "").trim();
       var trenchId = (document.getElementById("ctx-trench").value || "").trim();
@@ -1902,6 +2087,7 @@ function showDetailCard() {
       var layerCountStr = (document.getElementById("strat-layers").value || "").trim();
       var keyLayersSummary = (document.getElementById("strat-key").value || "").trim();
       var profileSummary = (document.getElementById("strat-summary").value || "").trim();
+      var stratNotes = (document.getElementById("strat-notes").value || "").trim();
 
       if (!siteName || !layerCountStr) {
         
@@ -1916,7 +2102,7 @@ function showDetailCard() {
       var qrPayload = "ARCHHUB:STR:" + id;
 
       var userInputContext = {
-        textNotes: profileSummary,
+        textNotes: stratNotes || profileSummary,
         imageDataUrl: stratPhotoDataUrl || null,
         manualFields: { siteName: siteName },
         autoContext: buildAutoContext()
@@ -1965,8 +2151,9 @@ function showDetailCard() {
       document.getElementById("strat-layers").value = "";
       document.getElementById("strat-key").value = "";
       document.getElementById("strat-summary").value = "";
-      stratPhotoUrl = null;
-      stratPreview.src = "";
+      document.getElementById("strat-notes").value = "";
+      stratPhotoDataUrl = null;
+      if (stratPreview) stratPreview.src = "";
     }
 
     // Shared list + search
